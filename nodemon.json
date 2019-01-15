@@ -1,0 +1,8 @@
+{
+  "env": {
+    "DEBUG": "stm:*",
+    "REST_PORT": 8810,
+    "DEBUG_NAMESPACE": "stm:bs",
+    "ERROR_NAMESPACE": "stm:bs:error"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "bs-api",
+  "version": "1.0.0",
+  "description": "BS API",
+  "main": "src/index.js",
+  "dependencies": {
+    "esm": "^3.0.84",
+    "koa": "^2.6.2",
+    "koa-body": "^4.0.6",
+    "koa-router": "^7.4.0",
+    "lodash": "^4.17.11",
+    "mongoose": "^5.4.3",
+    "sistemium-telegram": "^1.2.9"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^13.0.0",
+    "eslint-plugin-import": "^2.13.0",
+    "nodemon": "^1.18.3"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "test": "npm run lint",
+    "start": "nodemon --exec 'npm run lint && node -r esm' -- src/index.js"
+  },
+  "repository": "git@github.com:Sistemium/bs-api.git",
+  "author": "Sistemium UAB",
+  "license": "ISC"
+}
