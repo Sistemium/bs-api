@@ -18,13 +18,7 @@ async function merge(modelName, items) {
         updateOne: {
           filter: { _id: item.id },
           update: {
-            $set: {
-              barcode: item.barcode,
-              cts: item.cts,
-              egaisArticleId: item.egaisArticleId,
-              site: item.site,
-              ts: item.ts,
-            },
+            $set: item,
           },
           upsert: true,
         },
