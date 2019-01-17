@@ -10,23 +10,6 @@ const router = new Router();
 
 export default router;
 
-router.get('/test/:id?', async ctx => {
-
-  const { params: { id }, header: { authorization } } = ctx;
-
-  debug('GET /test', id, authorization);
-
-  try {
-
-    ctx.body = await new Promise(resolve => resolve({ id: id || 'test' }));
-
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
-
-});
-
 router.post('/mark', async ctx => {
 
   const { header: { authorization }, request: { body } } = ctx;
@@ -37,7 +20,7 @@ router.post('/mark', async ctx => {
 
     await merge('EgaisMark', body);
 
-    ctx.body = 'test';
+    ctx.body = 'Marks inserted';
 
   } catch (err) {
     ctx.response.status = 500;
@@ -56,7 +39,24 @@ router.post('/operation', async ctx => {
 
     await merge('EgaisMarkOperation', body);
 
-    ctx.body = 'test';
+    ctx.body = 'inserted operation';
+
+  } catch (err) {
+    ctx.response.status = 500;
+    error(err.name, err.message);
+  }
+
+});
+
+router.post('/test', async ctx => {
+
+  const { header: { authorization }, request: { body } } = ctx;
+
+  debug('GET /mark', authorization);
+
+  try {
+
+    ctx.body = body;
 
   } catch (err) {
     ctx.response.status = 500;
