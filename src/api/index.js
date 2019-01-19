@@ -2,7 +2,7 @@ import Router from 'koa-router';
 
 import log from 'sistemium-telegram/services/log';
 
-import merge from '../mongo';
+import { find, merge } from '../mongo';
 
 const { debug, error } = log('api');
 
@@ -14,7 +14,7 @@ router.post('/mark', async ctx => {
 
   const { header: { authorization }, request: { body } } = ctx;
 
-  debug('GET /mark', authorization);
+  debug('POST /mark', authorization);
 
   try {
 
@@ -29,17 +29,51 @@ router.post('/mark', async ctx => {
 
 });
 
-router.post('/operation', async ctx => {
+router.get('/mark/:id?', async ctx => {
 
-  const { header: { authorization }, request: { body } } = ctx;
+  const { header: { authorization }, params: { id } } = ctx;
 
   debug('GET /mark', authorization);
 
   try {
 
+    ctx.body = await find('EgaisMark', id);
+
+  } catch (err) {
+    ctx.response.status = 500;
+    error(err.name, err.message);
+  }
+
+});
+
+router.post('/operation', async ctx => {
+
+  const { header: { authorization }, request: { body } } = ctx;
+
+  debug('POST /operation', authorization);
+
+  try {
+
     await merge('EgaisMarkOperation', body);
 
-    ctx.body = 'inserted operation';
+    ctx.body = 'Operations inserted';
+
+  } catch (err) {
+    ctx.response.status = 500;
+    error(err.name, err.message);
+  }
+
+});
+
+router.get('/operation/:id?', async ctx => {
+
+  const { header: { authorization }, params: { id } } = ctx;
+
+  debug('GET /operation', authorization);
+
+  try {
+
+    ctx.body = await find('EgaisMarkOperation', id);
 
   } catch (err) {
     ctx.response.status = 500;

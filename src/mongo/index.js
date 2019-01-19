@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 mongoose.connect('mongodb://localhost:27017/EgaisDB', { useNewUrlParser: true });
 
-export default merge;
+export { merge, find };
 
 async function merge(modelName, items) {
 
@@ -27,5 +27,17 @@ async function merge(modelName, items) {
   });
 
   return model.bulkWrite(ops, { ordered: false });
+
+}
+
+async function find(modelName, id) {
+
+  mongoose.set('debug', true);
+
+  const model = require('./model/' + modelName).default; // eslint-disable-line
+
+  const filter = id ? { _id: id } : {};
+
+  return model.find(filter);
 
 }
