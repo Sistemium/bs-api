@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema({
-  cts: String,
+  cts: Date,
   documentId: String,
   egaisBoxId: String,
   egaisMarkId: String,
@@ -9,7 +9,7 @@ const schema = new mongoose.Schema({
   quantity: Number,
   site: Number,
   timestamp: String,
-  ts: String,
+  ts: Date,
   type: String,
 
 });

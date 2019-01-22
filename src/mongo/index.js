@@ -1,4 +1,6 @@
-const mongoose = require('mongoose');
+import omit from 'lodash/omit';
+
+import mongoose from 'mongoose';
 
 mongoose.connect('mongodb://localhost:27017/EgaisDB', { useNewUrlParser: true });
 
@@ -18,7 +20,11 @@ async function merge(modelName, items) {
         updateOne: {
           filter: { _id: item.id },
           update: {
-            $set: item,
+            $set: omit(item, ['id', 'ts', 'cts']),
+            $setOnInsert: {
+              cts: new Date(),
+            },
+            $currentDate: { ts: true },
           },
           upsert: true,
         },
