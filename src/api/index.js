@@ -81,20 +81,3 @@ router.get('/operation/:id?', async ctx => {
   }
 
 });
-
-router.post('/test', async ctx => {
-
-  const { header: { authorization }, request: { body } } = ctx;
-
-  debug('GET /mark', authorization);
-
-  try {
-
-    ctx.body = body;
-
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
-
-});
