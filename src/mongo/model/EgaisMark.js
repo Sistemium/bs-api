@@ -8,6 +8,10 @@ const schema = new mongoose.Schema({
   site: Number,
   ts: Date,
 });
+
+schema.set('toJSON', {
+  virtuals: true,
+  transform(doc, ret) { delete ret._id; } // eslint-disable-line
 });
 
 export default mongoose.model('EgaisMark', schema);

@@ -14,4 +14,9 @@ const schema = new mongoose.Schema({
 
 });
 
+schema.set('toJSON', {
+  virtuals: true,
+  transform(doc, ret) { delete ret._id; } // eslint-disable-line
+});
+
 export default mongoose.model('EgaisMarkOperation', schema);
