@@ -7,6 +7,7 @@ const schema = new mongoose.Schema({
   _id: String,
   site: Number,
   ts: Date,
+  operations: Object,
 });
 
 schema.set('toJSON', {

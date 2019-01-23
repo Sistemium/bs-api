@@ -54,7 +54,9 @@ router.post('/operation', async ctx => {
 
   try {
 
-    await merge('EgaisMarkOperation', body);
+    // await merge('EgaisMarkOperation', body);
+
+    await merge('EgaisMark', body, 'operations', 'documentId');
 
     ctx.body = 'Operations inserted';
 
