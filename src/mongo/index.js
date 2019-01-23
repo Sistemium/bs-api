@@ -7,7 +7,7 @@ mongoose.connect('mongodb://localhost:27017/EgaisDB', { useNewUrlParser: true })
 
 export { merge, find };
 
-async function merge(modelName, items, path) {
+async function merge(modelName, items, path, pathid) {
 
   // mongoose.set('debug', true);
 
@@ -20,11 +20,11 @@ async function merge(modelName, items, path) {
 
   items.forEach(item => {
 
-    const key = `${path}.${item.id}`;
+    const key = `${path}.${item[pathid]}`;
 
     const set = path ? {
       $set: {
-        [key]: omit(item, ['ts', 'cts']),
+        [key]: item,
       },
     }
       : {
