@@ -64,20 +64,3 @@ router.post('/operation', async ctx => {
   }
 
 });
-
-router.get('/operation/:id?', async ctx => {
-
-  const { header: { authorization }, params: { id } } = ctx;
-
-  debug('GET /operation', authorization);
-
-  try {
-
-    ctx.body = await find('EgaisMarkOperation', id);
-
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
-
-});
