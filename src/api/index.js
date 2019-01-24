@@ -2,7 +2,7 @@ import Router from 'koa-router';
 
 import log from 'sistemium-telegram/services/log';
 
-import { find, merge } from '../mongo';
+import { find, merge, mergeOperations } from '../mongo';
 
 const { debug, error } = log('api');
 
@@ -54,9 +54,7 @@ router.post('/operation', async ctx => {
 
   try {
 
-    // await merge('EgaisMarkOperation', body);
-
-    await merge('EgaisMark', body, 'operations', 'documentId');
+    await mergeOperations(body);
 
     ctx.body = 'Operations inserted';
 
