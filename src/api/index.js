@@ -83,3 +83,22 @@ router.post('/articledoc', async ctx => {
   }
 
 });
+
+router.post('/egaisbox', async ctx => {
+
+  const { header: { authorization }, request: { body } } = ctx;
+
+  debug('POST /egaisbox', authorization);
+
+  try {
+
+    await merge('EgaisBox', body);
+
+    ctx.body = 'Egais box inserted';
+
+  } catch (err) {
+    ctx.response.status = 500;
+    error(err.name, err.message);
+  }
+
+});
