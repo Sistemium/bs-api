@@ -84,6 +84,23 @@ router.post('/articledoc', async ctx => {
 
 });
 
+router.get('/articledoc/:id?', async ctx => {
+
+  const { header: { authorization }, params: { id } } = ctx;
+
+  debug('GET /articledoc', authorization);
+
+  try {
+
+    ctx.body = await find('ArticleDoc', id);
+
+  } catch (err) {
+    ctx.response.status = 500;
+    error(err.name, err.message);
+  }
+
+});
+
 router.post('/egaisbox', async ctx => {
 
   const { header: { authorization }, request: { body } } = ctx;
