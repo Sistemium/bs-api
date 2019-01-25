@@ -64,3 +64,22 @@ router.post('/operation', async ctx => {
   }
 
 });
+
+router.post('/articledoc', async ctx => {
+
+  const { header: { authorization }, request: { body } } = ctx;
+
+  debug('POST /articledoc', authorization);
+
+  try {
+
+    await merge('ArticleDoc', body);
+
+    ctx.body = 'Article Docs inserted';
+
+  } catch (err) {
+    ctx.response.status = 500;
+    error(err.name, err.message);
+  }
+
+});
