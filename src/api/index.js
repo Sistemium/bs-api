@@ -119,3 +119,20 @@ router.post('/egaisbox', async ctx => {
   }
 
 });
+
+router.get('/egaisbox/:id?', async ctx => {
+
+  const { header: { authorization }, params: { id } } = ctx;
+
+  debug('GET /egaisbox', authorization);
+
+  try {
+
+    ctx.body = await find('EgaisBox', id);
+
+  } catch (err) {
+    ctx.response.status = 500;
+    error(err.name, err.message);
+  }
+
+});
