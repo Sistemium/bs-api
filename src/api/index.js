@@ -4,6 +4,10 @@ import log from 'sistemium-telegram/services/log';
 
 import { find, merge, mergeOperations } from '../mongo';
 
+import startProcessing from '../processing';
+
+startProcessing();
+
 const { debug, error } = log('api');
 
 const router = new Router();
