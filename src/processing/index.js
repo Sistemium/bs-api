@@ -1,5 +1,6 @@
 import values from 'lodash/values';
 import EgaisMark from '../mongo/model/EgaisMark';
+import ArticleDoc from '../mongo/model/ArticleDoc';
 
 export default startProcessing;
 
@@ -43,10 +44,15 @@ async function startProcessing() {
 
         await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true }); // eslint-disable-line
 
-
       } else {
 
-        console.log(boxId);
+        const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId }).sort('-ts'); // eslint-disable-line
+
+        if (doc) {
+
+          await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true }); // eslint-disable-line
+
+        }
 
       }
 
