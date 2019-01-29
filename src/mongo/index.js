@@ -1,11 +1,11 @@
 import omit from 'lodash/omit';
 import mongoose from 'mongoose';
 
-mongoose.connect('mongodb://localhost:27017/EgaisDB', { useNewUrlParser: true });
+export async function connect() {
+  return mongoose.connect('mongodb://localhost:27017/EgaisDB', { useNewUrlParser: true });
+}
 
-export { merge, mergeOperations, find };
-
-async function merge(modelName, items) {
+export async function merge(modelName, items) {
 
   // mongoose.set('debug', true);
 
@@ -38,7 +38,7 @@ async function merge(modelName, items) {
 
 }
 
-async function mergeOperations(items) {
+export async function mergeOperations(items) {
 
   // mongoose.set('debug', true);
 
@@ -76,11 +76,13 @@ async function mergeOperations(items) {
 
 }
 
-async function find(modelName, id) {
+export async function find(modelName, id) {
 
   mongoose.set('debug', true);
 
-  const model = require('./model/' + modelName).default; // eslint-disable-line
+  const file = `./model/${modelName}`;
+  // eslint-disable-next-line
+  const model = require(file).default;
 
   const filter = id ? { _id: id } : {};
 

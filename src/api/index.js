@@ -2,17 +2,17 @@ import Router from 'koa-router';
 
 import log from 'sistemium-telegram/services/log';
 
-import { find, merge, mergeOperations } from '../mongo';
+import * as mongo from '../mongo';
 
-import startProcessing from '../processing';
-
-startProcessing();
-
+const { find, merge, mergeOperations } = mongo;
 const { debug, error } = log('api');
 
 const router = new Router();
 
 export default router;
+
+mongo.connect()
+  .then(() => debug('connected'), error);
 
 router.post('/mark', async ctx => {
 
