@@ -8,7 +8,7 @@ async function startProcessing() {
 
   // mongoose.set('debug', true);
 
-  const cursor = EgaisMark.find({ isProcessed: false }).cursor();
+  const cursor = EgaisMark.find({ isProcessed: { $ne: true } }).cursor();
 
   try {
 
