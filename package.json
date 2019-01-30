@@ -24,7 +24,7 @@
     "lint": "eslint src",
     "test": "npm run lint",
     "start": "nodemon --exec 'npm run lint && node -r esm' -- src/index.js",
-    "processing": "node -r esm src/processing",
+    "processing": "nodemon src/processing/test",
     "nodemon-processing": "nodemon --exec 'npm run lint && node -r esm' -- src/processing/index.js"
   },
   "repository": "git@github.com:Sistemium/bs-api.git",
