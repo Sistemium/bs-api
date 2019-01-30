@@ -11,7 +11,8 @@
     "koa-router": "^7.4.0",
     "lodash": "^4.17.11",
     "mongoose": "^5.4.3",
-    "sistemium-telegram": "^1.2.9"
+    "sistemium-telegram": "^1.2.9",
+    "sqlanywhere": "^1.0.24"
   },
   "devDependencies": {
     "eslint": "^4.19.1",
@@ -23,7 +24,8 @@
     "lint": "eslint src",
     "test": "npm run lint",
     "start": "nodemon --exec 'npm run lint && node -r esm' -- src/index.js",
-    "processing": "nodemon --exec 'npm run lint && node -r esm' -- src/processing/index.js"
+    "processing": "node -r esm src/processing",
+    "nodemon-processing": "nodemon --exec 'npm run lint && node -r esm' -- src/processing/index.js"
   },
   "repository": "git@github.com:Sistemium/bs-api.git",
   "author": "Sistemium UAB",

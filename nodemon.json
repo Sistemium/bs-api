@@ -3,6 +3,9 @@
     "DEBUG": "stm:*",
     "REST_PORT": 8810,
     "DEBUG_NAMESPACE": "stm:bs",
-    "ERROR_NAMESPACE": "stm:bs:error"
+    "ERROR_NAMESPACE": "stm:bs:error",
+    "SQLANY16": "/Applications/SQLAnywhere16/System",
+    "DYLD_LIBRARY_PATH": "/Applications/SQLAnywhere16/System/lib64",
+    "DYLD_BIND_AT_LAUNCH": "1"
   }
 }

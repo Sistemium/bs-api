@@ -9,9 +9,7 @@ import ArticleDoc from '../mongo/model/ArticleDoc';
 
 const { debug, error } = log('marksProcessing');
 
-/* eslint-disable no-await-in-loop */
-
-export default async function () {
+export default async function (processBox, writeDocId) {
 
   // mongoose.set('debug', true);
   debug('start');
@@ -52,10 +50,16 @@ export default async function () {
       error('no box id');
     } else {
 
+      debug('test');
+
+      await processBox(boxId);
+
       const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
         .sort('-ts');
 
       if (doc) {
+
+        await writeDocId(doc.id);
 
         await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
 
