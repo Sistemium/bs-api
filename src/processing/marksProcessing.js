@@ -1,5 +1,7 @@
 import log from 'sistemium-telegram/services/log';
 import each from 'lodash/each';
+import { whilstAsync } from 'sistemium-telegram/services/async';
+
 import EgaisMark from '../mongo/model/EgaisMark';
 import ArticleDoc from '../mongo/model/ArticleDoc';
 
@@ -14,61 +16,55 @@ export default async function () {
   // mongoose.set('debug', true);
   debug('start');
 
-  try {
+  const cursor = EgaisMark.find({ isProcessed: { $ne: true } })
+    .cursor();
 
-    const cursor = EgaisMark.find({ isProcessed: { $ne: true } })
-      .cursor();
+  let mark = await cursor.next();
 
-    let mark = await cursor.next();
+  debug('cursor', !!mark);
 
-    debug('cursor', !!mark);
+  return whilstAsync(() => mark, async () => {
 
-    while (mark) {
+    const { operations } = mark;
 
-      const { operations } = mark;
+    let sumQuantity = 0;
+    let boxId = null;
+    let lastTimestamp = '';
 
-      let sumQuantity = 0;
-      let boxId = null;
-      let lastTimestamp = '';
+    each(operations, operation => {
 
-      each(operations, operation => {
+      sumQuantity += operation.quantity;
 
-        sumQuantity += operation.quantity;
+      if (operation.quantity === 1 && operation.ts > lastTimestamp) {
 
-        if (operation.quantity === 1 && operation.ts > lastTimestamp) {
-
-          lastTimestamp = operation.ts;
-          boxId = operation.egaisBoxId;
-
-        }
-
-      });
-
-      if (sumQuantity !== 1) {
-
-        await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
-
-      } else if (!boxId) {
-        error('no box id');
-      } else {
-
-        const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
-          .sort('-ts');
-
-        if (doc) {
-
-          await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
-
-        }
+        lastTimestamp = operation.ts;
+        boxId = operation.egaisBoxId;
 
       }
 
-      mark = await cursor.next();
+    });
+
+    if (sumQuantity !== 1) {
+
+      await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
+
+    } else if (!boxId) {
+      error('no box id');
+    } else {
+
+      const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
+        .sort('-ts');
+
+      if (doc) {
+
+        await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
+
+      }
 
     }
 
-  } catch (e) {
-    error('error', e.message);
-  }
+    mark = await cursor.next();
+
+  });
 
 }
