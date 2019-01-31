@@ -12,7 +12,7 @@ const externalDb = new External(process.env.SQLA_CONNECTION);
 
 debug('start');
 
-marksProcessing(processBox, writeDocId)
+marksProcessing(processBox, externalDb.exportMark)
   .then(() => {
     debug('finish');
     return disconnect();
@@ -35,11 +35,6 @@ async function processBox(boxId) {
 
   const box = await EgaisBox.findOne({ _id: boxId });
 
-  debug(box);
-
-}
-
-// eslint-disable-next-line
-async function writeDocId() {
+  debug('processBox', box.barcode);
 
 }

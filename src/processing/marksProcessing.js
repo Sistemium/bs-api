@@ -1,5 +1,6 @@
 import log from 'sistemium-telegram/services/log';
 import each from 'lodash/each';
+import map from 'lodash/map';
 import { whilstAsync } from 'sistemium-telegram/services/async';
 
 import EgaisMark from '../mongo/model/EgaisMark';
@@ -14,14 +15,23 @@ export default async function (processBox, writeDocId) {
   // mongoose.set('debug', true);
   debug('start');
 
-  const cursor = EgaisMark.find({ isProcessed: { $ne: true } })
-    .cursor();
+  await unprocessMarks();
+
+  const query = EgaisMark.find({ isProcessed: { $ne: true } });
+  const cursor = query.cursor();
 
   let mark = await cursor.next();
 
-  debug('cursor', !!mark);
+  if (!mark) {
+    debug('no marks to process');
+    return;
+  }
 
-  return whilstAsync(() => mark, async () => {
+  const count = await query.countDocuments();
+
+  debug('marks to process', count);
+
+  await whilstAsync(() => mark, async () => {
 
     const { operations } = mark;
 
@@ -44,6 +54,7 @@ export default async function (processBox, writeDocId) {
 
     if (sumQuantity !== 1) {
 
+      debug('ignore', mark.id);
       await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
 
     } else if (!boxId) {
@@ -59,7 +70,12 @@ export default async function (processBox, writeDocId) {
 
       if (doc) {
 
-        await writeDocId(doc.id);
+        await writeDocId({
+          articleId: doc.articleId,
+          egaisMarkId: mark.id,
+          egaisBoxId: boxId,
+          barcode: mark.barcode,
+        });
 
         await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
 
@@ -70,5 +86,49 @@ export default async function (processBox, writeDocId) {
     mark = await cursor.next();
 
   });
+
+}
+
+
+async function unprocessMarks() {
+
+  const marks = await EgaisMark.aggregate([
+    {
+      $match: { isProcessed: true },
+    },
+    {
+      $limit: 50000,
+    },
+    {
+      $project: { o: { $objectToArray: '$operations' } },
+    },
+    {
+      $project: {
+        operationsCount: {
+          $cond: {
+            if: { $isArray: '$o' },
+            then: { $size: '$o' },
+            else: 0,
+          },
+        },
+        operations: '$o.v',
+      },
+    },
+    {
+      $match: { operationsCount: { $gt: 1 } },
+    },
+    {
+      $limit: 5,
+    },
+    { $project: { _id: 1 } },
+  ]);
+
+  const idsToUpdate = map(marks, '_id');
+
+  debug('marks', idsToUpdate);
+
+  const filter = { _id: { $in: idsToUpdate } };
+
+  await EgaisMark.updateMany(filter, { $set: { isProcessed: false } });
 
 }
