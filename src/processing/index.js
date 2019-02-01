@@ -35,6 +35,20 @@ async function processBox(boxId) {
 
   const box = await EgaisBox.findOne({ _id: boxId });
 
+  if (!box) {
+
+    debug('no box with id: ', boxId);
+
+    return;
+
+  }
+
+  if (box.parentId) {
+
+    await processBox(box.parentId);
+
+  }
+
   debug('processBox', box.barcode);
 
 }
