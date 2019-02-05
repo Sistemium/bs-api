@@ -1,5 +1,6 @@
 import db from 'sqlanywhere';
 import log from 'sistemium-telegram/services/log';
+import { serverDateTimeFormat } from 'sistemium-telegram/services/moments';
 
 // eslint-disable-next-line
 const { debug, error } = log('processing:external');
@@ -84,6 +85,7 @@ export default class {
       id,
       barcode,
       site,
+      cts,
     } = params;
 
     debug('exportPalette', id, barcode, site);
@@ -92,17 +94,17 @@ export default class {
       select 
         ? as xid,
         ? as barcode,
-        now() as deviceCts,
-        'new' as processing,
-        ? as site
+        'stock' as processing,
+        ? as site,
+        ? as deviceCts
     ) as t on t.xid = d.xid
     when not matched then insert
-    when matched then update
+    when matched then skip
     `;
 
     const prepared = await this.prepare(sql);
 
-    const values = [id, barcode, site];
+    const values = [id, barcode, site, serverDateTimeFormat(cts)];
 
     await exec(prepared, values);
 
@@ -117,6 +119,7 @@ export default class {
       id,
       barcode,
       site,
+      cts,
     } = params;
 
     debug('exportBox', id, barcode, parentId, site);
@@ -126,17 +129,17 @@ export default class {
         ? as xid,
         ? as barcode,
         (select id from bs.WarehousePalette where xid = ?) as currentPalette,
-        now() as deviceCts,
-        'new' as processing,
-        ? as site
+        ? as site,
+        'stock' as processing,
+        ? as deviceCts
     ) as t on t.xid = d.xid
     when not matched then insert
-    when matched then update
+    when matched then skip
     `;
 
     const prepared = await this.prepare(sql);
 
-    const values = [id, barcode, parentId, site];
+    const values = [id, barcode, parentId, site, serverDateTimeFormat(cts)];
 
     await exec(prepared, values);
 
@@ -152,9 +155,10 @@ export default class {
       egaisBoxId,
       barcode,
       site,
+      cts,
     } = params;
 
-    debug('exportMark', articleId, egaisMarkId, egaisBoxId, barcode, site);
+    debug('exportMark', articleId, egaisMarkId, egaisBoxId, barcode, site, cts);
 
     const sql = `merge into bs.WarehouseItem as d using with auto name (
       select 
@@ -162,19 +166,19 @@ export default class {
         (select id from bs.WarehouseBox where xid = ?) as currentBox,
         ? as barcode,
         ? as xid,
-        now() as deviceCts,
-        'new' as processing,
-        ? as site
+        'stock' as processing,
+        ? as site,
+        ? as deviceCts
       from bs.ArticleTable a
       where a.xid = ?
     ) as t on t.xid = d.xid
     when not matched then insert
-    when matched then update
+    when matched then skip
     `;
 
     const prepared = await this.prepare(sql);
 
-    const values = [egaisBoxId, barcode, egaisMarkId, site, articleId];
+    const values = [egaisBoxId, barcode, egaisMarkId, site, serverDateTimeFormat(cts), articleId];
 
     await exec(prepared, values);
 
