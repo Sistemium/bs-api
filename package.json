@@ -4,6 +4,7 @@
   "description": "BS API",
   "main": "src/index.js",
   "dependencies": {
+    "axios": "^0.18.0",
     "esm": "^3.0.84",
     "koa": "^2.6.2",
     "koa-body": "^4.0.6",
@@ -27,8 +28,7 @@
     "lint": "eslint src",
     "test": "npm run lint",
     "start": "nodemon --exec 'npm run lint && node -r esm' -- src/index.js",
-    "processing": "nodemon src/processing/test",
-    "nodemon-processing": "nodemon --exec 'npm run lint && node -r esm' -- src/processing/index.js"
+    "transfer": "nodemon --watch src/transfer --exec 'npm run lint && node -r esm' -- src/transfer"
   },
   "repository": "git@github.com:Sistemium/bs-api.git",
   "author": "Sistemium UAB",

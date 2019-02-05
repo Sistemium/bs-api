@@ -82,7 +82,7 @@ export async function mergeOperations(items) {
 
 export async function find(modelName, id) {
 
-  mongoose.set('debug', true);
+  // mongoose.set('debug', true);
 
   const file = `./model/${modelName}`;
   // eslint-disable-next-line
