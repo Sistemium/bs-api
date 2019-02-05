@@ -15,9 +15,9 @@ export default async function (processBox, writeDocId) {
   // mongoose.set('debug', true);
   debug('start');
 
-  await unprocessMarks();
+  // await unprocessMarks();
 
-  const query = EgaisMark.find({ isProcessed: { $ne: true } });
+  const query = EgaisMark.find({ isProcessed: { $ne: true } }).sort('-ts');
   const cursor = query.cursor();
 
   let mark = await cursor.next();
@@ -29,7 +29,7 @@ export default async function (processBox, writeDocId) {
 
   const count = await query.countDocuments();
 
-  debug('marks to process', count);
+  debug('marks to process:', count);
 
   await whilstAsync(() => mark, async () => {
 
@@ -54,14 +54,12 @@ export default async function (processBox, writeDocId) {
 
     if (sumQuantity !== 1) {
 
-      debug('ignore', mark.id);
+      // debug('ignore', mark.id);
       await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
 
     } else if (!boxId) {
       error('no box id');
     } else {
-
-      debug('test');
 
       await processBox(boxId);
 
@@ -73,11 +71,15 @@ export default async function (processBox, writeDocId) {
         await writeDocId({
           articleId: doc.articleId,
           egaisMarkId: mark.id,
+          site: mark.site,
           egaisBoxId: boxId,
           barcode: mark.barcode,
         });
 
         await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
+
+        mark = null;
+        return;
 
       }
 
@@ -89,38 +91,55 @@ export default async function (processBox, writeDocId) {
 
 }
 
-
+// eslint-disable-next-line
 async function unprocessMarks() {
 
   const marks = await EgaisMark.aggregate([
     {
       $match: { isProcessed: true },
     },
+    { $addFields: { operations: { $objectToArray: '$operations' } } },
+    { $addFields: { operations: '$operations.v' } },
     {
-      $limit: 50000,
+      $addFields: {
+        sum: { $sum: '$operations.quantity' },
+      },
     },
+
+    { $match: { sum: { $eq: 1 } } },
+
+    { $limit: 100000 },
+    { $unwind: '$operations' },
+    { $match: { 'operations.quantity': 1 } },
+    { $sort: { 'operations.ts': -1 } },
     {
-      $project: { o: { $objectToArray: '$operations' } },
-    },
-    {
-      $project: {
-        operationsCount: {
-          $cond: {
-            if: { $isArray: '$o' },
-            then: { $size: '$o' },
-            else: 0,
-          },
-        },
-        operations: '$o.v',
+      $group: {
+        _id: '$_id',
+        egaisBoxId: { $first: '$operations.egaisBoxId' },
       },
     },
     {
-      $match: { operationsCount: { $gt: 1 } },
+      $lookup: {
+        from: 'articledocs',
+        localField: 'egaisBoxId',
+        foreignField: 'egaisBoxIds',
+        as: 'articledocs',
+      },
     },
     {
-      $limit: 5,
+      $addFields: {
+        articledocsCount: {
+          $size: '$articledocs',
+        },
+      },
     },
-    { $project: { _id: 1 } },
+    {
+      $match: {
+        articledocsCount: {
+          $gt: 0,
+        },
+      },
+    },
   ]);
 
   const idsToUpdate = map(marks, '_id');

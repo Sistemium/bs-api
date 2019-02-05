@@ -7,6 +7,7 @@ const schema = new mongoose.Schema({
   barcode: String,
   parentId: String,
   site: Number,
+  isProcessed: Boolean,
 });
 
 schema.set('toJSON', {
