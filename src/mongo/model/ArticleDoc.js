@@ -18,4 +18,7 @@ schema.set('toJSON', {
   transform(doc, ret) { delete ret._id; } // eslint-disable-line
 });
 
+schema.index({ ts: -1 });
+schema.index({ egaisBoxIds: 1 });
+
 export default mongoose.model('ArticleDoc', schema);

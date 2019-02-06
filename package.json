@@ -11,7 +11,7 @@
     "koa-morgan": "^1.0.1",
     "koa-router": "^7.4.0",
     "lodash": "^4.17.11",
-    "mongoose": "^5.4.3",
+    "mongoose": "^5.4.10",
     "sistemium-telegram": "^1.2.9",
     "sqlanywhere": "^1.0.24"
   },

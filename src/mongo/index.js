@@ -2,7 +2,10 @@ import omit from 'lodash/omit';
 import mongoose from 'mongoose';
 
 export async function connect() {
-  return mongoose.connect('mongodb://localhost:27017/EgaisDB', { useNewUrlParser: true });
+  return mongoose.connect(`mongodb://${process.env.MONGO_URL}`, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+  });
 }
 
 export async function disconnect() {
