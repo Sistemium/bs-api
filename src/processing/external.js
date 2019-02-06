@@ -106,9 +106,7 @@ export default class {
 
     const values = [id, barcode, site, serverDateTimeFormat(cts)];
 
-    await exec(prepared, values);
-
-    return this.commit();
+    await this.exec(prepared, values);
 
   }
 
@@ -122,7 +120,7 @@ export default class {
       cts,
     } = params;
 
-    debug('exportBox', id, barcode, parentId, site);
+    debug('exportBox', id, barcode, site);
 
     const sql = `merge into bs.WarehouseBox as d using with auto name (
       select 
@@ -141,9 +139,7 @@ export default class {
 
     const values = [id, barcode, parentId, site, serverDateTimeFormat(cts)];
 
-    await exec(prepared, values);
-
-    return this.commit();
+    await this.exec(prepared, values);
 
   }
 
@@ -158,7 +154,7 @@ export default class {
       cts,
     } = params;
 
-    debug('exportMark', articleId, egaisMarkId, egaisBoxId, barcode, site, cts);
+    debug('exportMark', egaisMarkId, site);
 
     const sql = `merge into bs.WarehouseItem as d using with auto name (
       select 
@@ -180,30 +176,32 @@ export default class {
 
     const values = [egaisBoxId, barcode, egaisMarkId, site, serverDateTimeFormat(cts), articleId];
 
-    await exec(prepared, values);
+    await this.exec(prepared, values);
 
-    return this.commit();
+    // return this.commit();
 
   }
 
-}
+  async exec(prepared, values) {
 
-async function exec(prepared, values) {
+    return new Promise((resolve, reject) => {
 
-  return new Promise((resolve, reject) => {
+      prepared.exec(values, async (err, res) => {
 
-    prepared.exec(values, (err, res) => {
+        if (!err) {
+          // debug('exec', res);
+          await this.commit();
+          resolve(res);
+        } else {
+          error('exec', err);
+          this.connection.rollback();
+          reject(err);
+        }
 
-      if (!err) {
-        // debug('exec', res);
-        resolve(res);
-      } else {
-        error('exec', err);
-        reject(err);
-      }
+      });
 
     });
 
-  });
+  }
 
 }

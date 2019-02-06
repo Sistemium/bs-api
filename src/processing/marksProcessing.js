@@ -78,9 +78,6 @@ export default async function (processBox, writeDocId) {
 
         await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
 
-        mark = null;
-        return;
-
       }
 
     }

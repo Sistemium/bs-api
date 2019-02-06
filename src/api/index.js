@@ -11,9 +11,6 @@ const router = new Router();
 
 export default router;
 
-mongo.connect()
-  .then(() => debug('connected'), error);
-
 router.post('/mark', async ctx => {
 
   const { header: { authorization }, request: { body } } = ctx;
