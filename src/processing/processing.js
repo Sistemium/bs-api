@@ -1,49 +1,20 @@
 import log from 'sistemium-telegram/services/log';
-
 import EgaisBox from '../mongo/model/EgaisBox';
-import * as mongo from '../mongo';
-
-import marksProcessing from './marksProcessing';
 import External from './external';
 
 const { debug, error } = log('processing');
 
-const externalDb = new External(process.env.SQLA_CONNECTION);
+const { SQLA_CONNECTION } = process.env;
 
-debug('start');
+export const externalDb = new External(SQLA_CONNECTION);
 
-processAll()
-  .then(() => debug('done'))
-  .catch(err => error(err.message));
-
-
-async function processAll() {
-
-  await externalDb.connect();
-  debug('external db connected');
-
-  await mongo.connect();
-  debug('mongo connected');
-
-  await marksProcessing(processBox, args => externalDb.exportMark(args));
-  debug('finish');
-
-  await mongo.disconnect();
-  await externalDb.disconnect();
-
-  debug('disconnected');
-
-}
-
-
-async function processBox(boxId) {
+export async function processBox(boxId) {
 
   const box = await EgaisBox.findOne({ _id: boxId });
 
   if (!box) {
     error('no box with id: ', boxId);
-    // TODO: maybe throw
-    return;
+    throw Error(`no box with id: ${boxId}`);
   }
 
   const { parentId: paletteId, isProcessed } = box;
@@ -63,6 +34,7 @@ async function processBox(boxId) {
   debug('processBox', box.barcode);
 
 }
+
 
 async function processPalette(boxId) {
 
