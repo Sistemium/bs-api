@@ -1,8 +1,10 @@
 import omit from 'lodash/omit';
 import mongoose from 'mongoose';
 
+const mongoUrl = process.env.MONGO_URL || 'localhost:27017/EgaisDB';
+
 export async function connect() {
-  return mongoose.connect(`mongodb://${process.env.MONGO_URL}`, {
+  return mongoose.connect(`mongodb://${mongoUrl}`, {
     useNewUrlParser: true,
     useCreateIndex: true,
   });
