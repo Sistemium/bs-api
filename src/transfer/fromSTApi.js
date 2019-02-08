@@ -1,4 +1,3 @@
-import axios from 'axios';
 import log from 'sistemium-telegram/services/log';
 import { whilstAsync } from 'sistemium-telegram/services/async';
 
@@ -9,8 +8,7 @@ import sqlSource, { columns } from './sqlSource';
 const { debug, error } = log('transfer');
 
 const PAGE_SIZE = parseInt(process.env.PAGE_SIZE || '1000', 0);
-const API_URL = 'https://api.sistemium.com/v4/bs/1c';
-const { STAPI_AUTH } = process.env;
+
 const OFFSET_HEADER = 'x-offset';
 
 async function get(model) {
@@ -55,17 +53,6 @@ export default async function (model) {
     },
   );
 
-}
-
-// eslint-disable-next-line
-function getFromREST(name, offset) {
-  return axios.get(`${API_URL}/${name}`, {
-    headers: {
-      authorization: STAPI_AUTH,
-      'x-page-size': PAGE_SIZE,
-      [OFFSET_HEADER]: offset,
-    },
-  });
 }
 
 async function getFromSQL(name, offset) {
