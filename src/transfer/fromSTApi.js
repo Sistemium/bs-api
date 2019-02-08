@@ -24,8 +24,8 @@ async function get(model) {
 
   const { data, headers, status } = await getFromSQL(name, offset);
 
-  if (!data) {
-    debug(name, 'Status:', status, offset);
+  if (!(data && data.length)) {
+    debug(name, 'empty response:', status, offset);
     return 0;
   }
 
