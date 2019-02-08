@@ -1,6 +1,6 @@
 import log from 'sistemium-telegram/services/log';
 import fromSTApi from './fromSTApi';
-import { connect } from '../mongo';
+import * as mongo from '../mongo';
 import sqlSource from './sqlSource';
 
 // eslint-disable-next-line
@@ -14,10 +14,15 @@ transferAll()
     error('error', e.message);
   });
 
+process.on('SIGINT', async () => {
+  await mongo.disconnect();
+  await sqlSource.disconnect();
+  process.exit();
+});
 
 async function transferAll() {
 
-  await connect();
+  await mongo.connect();
   await sqlSource.connect();
 
   debug('connected');
@@ -26,7 +31,13 @@ async function transferAll() {
 
   // await fromSTApi('EgaisBox');
 
-  await fromSTApi('EgaisMark');
+  try {
+    // await fromSTApi('EgaisMark');
+  } catch (e) {
+    error(e.message);
+    await mongo.disconnect();
+    await sqlSource.disconnect();
+  }
 
   // await fromSTApi('EgaisMarkOperation');
 
