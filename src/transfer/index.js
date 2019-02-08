@@ -1,7 +1,7 @@
 import log from 'sistemium-telegram/services/log';
 
-// import ArticleDoc from '../mongo/model/ArticleDoc';
-// import EgaisMark from '../mongo/model/EgaisMark';
+import ArticleDoc from '../mongo/model/ArticleDoc';
+import EgaisMark, { mergeOperations } from '../mongo/model/EgaisMark';
 
 import fromSTApi from './fromSTApi';
 import * as mongo from '../mongo';
@@ -25,19 +25,19 @@ process.on('SIGINT', async () => {
 
 async function transferAll() {
 
-  await mongo.connect();
-  await sqlSource.connect();
-
   debug('connected');
 
-
   try {
-    // await fromSTApi(require('../mongo/model/EgaisMark').default);
+
+    await mongo.connect();
+    await sqlSource.connect();
+
+    await fromSTApi(EgaisMark);
     // await fromSTApi('EgaisBox');
-    // await fromSTApi(ArticleDoc);
+    await fromSTApi(ArticleDoc);
     await fromSTApi({
       modelName: 'EgaisMarkOperation',
-      merge: require('../mongo/model/EgaisMark').mergeOperations,
+      merge: mergeOperations,
     });
   } catch (e) {
     error(e.message);
@@ -49,6 +49,8 @@ async function transferAll() {
 
 
 async function finish() {
-  await mongo.disconnect().catch(error);
-  await sqlSource.disconnect().catch(error);
+  await mongo.disconnect()
+    .catch(error);
+  await sqlSource.disconnect()
+    .catch(error);
 }

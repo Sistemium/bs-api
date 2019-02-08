@@ -57,5 +57,5 @@ export const columns = {
     'egaisBoxId',
     'timestamp',
     'quantity',
-  ]
+  ],
 };

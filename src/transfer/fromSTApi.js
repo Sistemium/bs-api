@@ -1,9 +1,8 @@
 import axios from 'axios';
 import log from 'sistemium-telegram/services/log';
-// import find from 'lodash/find';
 import { whilstAsync } from 'sistemium-telegram/services/async';
+
 import Offset from '../mongo/model/Offset';
-import * as mongo from '../mongo';
 import sqlSource, { columns } from './sqlSource';
 
 // eslint-disable-next-line

@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+
 import { merge } from '../extentions';
 
 const schema = new mongoose.Schema({
@@ -17,14 +18,15 @@ const schema = new mongoose.Schema({
 
 schema.set('toJSON', {
   virtuals: true,
-  transform(doc, ret) { delete ret._id; } // eslint-disable-line
+  transform(doc, ret) {
+    delete ret._id; // eslint-disable-line
+  },
 });
 
 schema.index({ ts: -1 });
 schema.index({ isProcessed: 1 });
 
 schema.statics.merge = merge;
-schema.statics.mergeOperations = mergeOperations;
 
 const model = mongoose.model('EgaisMark', schema);
 
