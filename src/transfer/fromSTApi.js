@@ -1,27 +1,26 @@
 import axios from 'axios';
 import log from 'sistemium-telegram/services/log';
-import find from 'lodash/find';
+// import find from 'lodash/find';
 import { whilstAsync } from 'sistemium-telegram/services/async';
+import Offset from '../mongo/model/Offset';
 import * as mongo from '../mongo';
 import sqlSource, { columns } from './sqlSource';
 
 // eslint-disable-next-line
 const { debug, error } = log('transfer');
 
-const PAGE_SIZE = 1000;
+const PAGE_SIZE = parseInt(process.env.PAGE_SIZE || '1000', 0);
 const API_URL = 'https://api.sistemium.com/v4/bs/1c';
 const { STAPI_AUTH } = process.env;
 const OFFSET_HEADER = 'x-offset';
 
-async function get(name) {
+async function get(model) {
 
-  const o = mongo.find('Offset');
+  const { modelName: name } = model;
 
-  const offsets = await o;
-
-  const namedOffset = find(offsets, { id: name });
-
-  const offset = namedOffset ? namedOffset.offset : '1';
+  const lastOffset = await Offset.findById(name);
+  const namedOffset = lastOffset || new Offset({ _id: name, offset: 1 });
+  const { offset } = namedOffset;
 
   const { data, headers, status } = await getFromSQL(name, offset);
 
@@ -40,14 +39,13 @@ async function get(name) {
 
   } else {
 
-    await mongo.merge(name, data);
+    await model.merge(data);
 
   }
 
-  await mongo.merge('Offset', [{
-    id: name,
-    offset: nextOffset,
-  }]);
+  namedOffset.offset = nextOffset;
+
+  await namedOffset.save();
 
   debug(name, 'merged');
 
@@ -55,14 +53,14 @@ async function get(name) {
 
 }
 
-export default async function (name) {
+export default async function (model) {
 
   let length = PAGE_SIZE;
 
   await whilstAsync(
     () => PAGE_SIZE === length,
     async () => {
-      length = await get(name);
+      length = await get(model);
     },
   );
 
@@ -82,13 +80,12 @@ function getFromREST(name, offset) {
 async function getFromSQL(name, offset) {
 
   const startAt = parseInt(offset, 0);
-  // const pageSize = parseInt(PAGE_SIZE, 0);
 
   const data = await sqlSource.getData(name, PAGE_SIZE, startAt, columns[name]);
 
   return {
     data,
-    headers: { [OFFSET_HEADER]: PAGE_SIZE + startAt + 1 },
+    headers: { [OFFSET_HEADER]: PAGE_SIZE + startAt },
     status: 'OK',
   };
 

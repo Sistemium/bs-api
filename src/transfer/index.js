@@ -1,4 +1,7 @@
 import log from 'sistemium-telegram/services/log';
+
+import ArticleDoc from '../mongo/model/ArticleDoc';
+
 import fromSTApi from './fromSTApi';
 import * as mongo from '../mongo';
 import sqlSource from './sqlSource';
@@ -27,11 +30,11 @@ async function transferAll() {
 
   debug('connected');
 
-  // await fromSTApi('ArticleDoc');
 
   // await fromSTApi('EgaisBox');
 
   try {
+    await fromSTApi(ArticleDoc);
     // await fromSTApi('EgaisMark');
   } catch (e) {
     error(e.message);
