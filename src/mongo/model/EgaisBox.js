@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import { merge } from '../extentions';
 
 const schema = new mongoose.Schema({
   cts: Date,
@@ -19,5 +20,7 @@ schema.set('toJSON', {
 });
 
 schema.index({ ts: -1 });
+
+schema.statics.merge = merge;
 
 export default mongoose.model('EgaisBox', schema);

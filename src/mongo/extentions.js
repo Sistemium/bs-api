@@ -1,6 +1,5 @@
 import omit from 'lodash/omit';
 
-// eslint-disable-next-line
 export async function merge(items) {
 
   const ops = [];
@@ -31,5 +30,13 @@ export async function merge(items) {
   });
 
   return this.bulkWrite(ops, { ordered: false });
+
+}
+
+export async function findById(id) {
+
+  const filter = id ? { _id: id } : {};
+
+  return this.find(filter);
 
 }

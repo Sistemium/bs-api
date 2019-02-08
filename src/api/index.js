@@ -1,10 +1,10 @@
 import Router from 'koa-router';
-
 import log from 'sistemium-telegram/services/log';
 
-import * as mongo from '../mongo';
+import EgaisMark, { mergeOperations } from '../mongo/model/EgaisMark';
+import ArticleDoc from '../mongo/model/ArticleDoc';
+import EgaisBox from '../mongo/model/EgaisBox';
 
-const { find, merge, mergeOperations } = mongo;
 const { debug, error } = log('api');
 
 const router = new Router();
@@ -19,7 +19,7 @@ router.post('/mark', async ctx => {
 
   try {
 
-    await merge('EgaisMark', body);
+    await EgaisMark.merge(body);
 
     ctx.body = 'Marks inserted';
 
@@ -38,7 +38,7 @@ router.get('/mark/:id?', async ctx => {
 
   try {
 
-    ctx.body = await find('EgaisMark', id);
+    ctx.body = await EgaisMark.findById(id);
 
   } catch (err) {
     ctx.response.status = 500;
@@ -74,7 +74,7 @@ router.post('/articledoc', async ctx => {
 
   try {
 
-    await merge('ArticleDoc', body);
+    await ArticleDoc.merge(body);
 
     ctx.body = 'Article Docs inserted';
 
@@ -93,7 +93,7 @@ router.get('/articledoc/:id?', async ctx => {
 
   try {
 
-    ctx.body = await find('ArticleDoc', id);
+    ctx.body = await ArticleDoc.findById(id);
 
   } catch (err) {
     ctx.response.status = 500;
@@ -110,7 +110,7 @@ router.post('/egaisbox', async ctx => {
 
   try {
 
-    await merge('EgaisBox', body);
+    await EgaisBox.merge(body);
 
     ctx.body = 'Egais box inserted';
 
@@ -129,7 +129,7 @@ router.get('/egaisbox/:id?', async ctx => {
 
   try {
 
-    ctx.body = await find('EgaisBox', id);
+    ctx.body = await EgaisBox.findById(id);
 
   } catch (err) {
     ctx.response.status = 500;
