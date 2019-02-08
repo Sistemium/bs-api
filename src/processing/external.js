@@ -204,4 +204,31 @@ export default class {
 
   }
 
+  async dropPrepared(sql) {
+
+    const prepared = this.statements[sql];
+
+    if (!prepared) {
+      return false;
+    }
+
+    return new Promise((resolve, reject) => {
+
+      delete this.statements[sql];
+
+      prepared.drop(err => {
+
+        if (!err) {
+          resolve(true);
+        } else {
+          error('exec', err);
+          reject(err);
+        }
+
+      });
+
+    });
+
+  }
+
 }
