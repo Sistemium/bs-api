@@ -6,9 +6,7 @@ gulp.task('processAll', namedTask('processAll'));
 
 gulp.task('sqlTransfer', namedTask('sqlTransfer'));
 
-gulp.task('sqlTransfer', namedTask('watchProcessing'));
-
-gulp.task('watchProcessing', namedTask());
+gulp.task('watchProcessing', namedTask('watchProcessing'));
 
 gulp.task('lint', () => gulp.src(['src/**/*.js'])
   .pipe(eslint())
