@@ -25,6 +25,7 @@
     "nodemon": "^1.18.3"
   },
   "scripts": {
+    "build": "eslint src && cp -r src dist && cp package.json dist",
     "lint": "eslint src",
     "test": "npm run lint",
     "start": "nodemon --exec 'npm run lint && node -r esm' -- src/index.js",
