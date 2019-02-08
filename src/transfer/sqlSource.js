@@ -17,7 +17,7 @@ class SqlSource extends external {
     const sql = `
       select top ? start at ? ${columns.join(',')} 
       from c1.${table}
-      order by ts, id`;
+      order by id`;
 
     const prepared = await this.prepare(sql);
 
