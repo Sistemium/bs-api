@@ -36,7 +36,12 @@ class SqlSource extends external {
 export default new SqlSource(SQLA_CONNECTION);
 
 export const columns = {
-  EgaisMark: ['barcode', 'xid as id', 'egaisArticleId', 'site'],
+  EgaisMark: [
+    'xid as id',
+    'site',
+    'barcode',
+    'egaisArticleId',
+  ],
   ArticleDoc: [
     'xid as id',
     'site',
@@ -57,5 +62,11 @@ export const columns = {
     'egaisBoxId',
     'timestamp',
     'quantity',
+  ],
+  EgaisBox: [
+    'xid as id',
+    'site',
+    'barcode',
+    'parentId',
   ],
 };

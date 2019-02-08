@@ -1,5 +1,6 @@
 import log from 'sistemium-telegram/services/log';
 
+import EgaisBox from '../mongo/model/EgaisBox';
 import ArticleDoc from '../mongo/model/ArticleDoc';
 import EgaisMark, { mergeOperations } from '../mongo/model/EgaisMark';
 
@@ -33,7 +34,7 @@ async function transferAll() {
     await sqlSource.connect();
 
     await fromSTApi(EgaisMark);
-    // await fromSTApi('EgaisBox');
+    await fromSTApi(EgaisBox);
     await fromSTApi(ArticleDoc);
     await fromSTApi({
       modelName: 'EgaisMarkOperation',
