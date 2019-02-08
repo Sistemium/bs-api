@@ -1,6 +1,14 @@
+import log from 'sistemium-telegram/services/log';
 import mongoose from 'mongoose';
+import groupBy from 'lodash/groupBy';
+import map from 'lodash/map';
+import keyBy from 'lodash/keyBy';
+import orderBy from 'lodash/orderBy';
 
 import { merge } from '../extentions';
+
+// eslint-disable-next-line
+const { debug } = log('transfer');
 
 const schema = new mongoose.Schema({
   barcode: String,
@@ -34,34 +42,36 @@ export default model;
 
 export async function mergeOperations(items) {
 
-  const ops = [];
-
   const cts = new Date();
 
-  items.forEach(item => {
+  const byMark = groupBy(items, 'egaisMarkId');
 
-    const key = `operations.${item.documentId}`;
+  const ops = map(byMark, (operations, egaisMarkId) => {
 
-    ops.push(
-      {
-        updateOne: {
-          filter: { _id: item.egaisMarkId },
-          update: {
-            $set: {
-              [key]: item,
-              isProcessed: false,
-            },
-            $setOnInsert: {
-              cts,
-            },
-            $currentDate: { ts: true },
+    const keys = keyBy(operations, ({ documentId }) => `operations.${documentId}`);
+
+    return {
+      updateOne: {
+        filter: { _id: egaisMarkId },
+        update: {
+          $set: Object.assign(keys, { isProcessed: false }),
+          $setOnInsert: {
+            cts,
           },
-          upsert: true,
+          $currentDate: { ts: true },
         },
+        upsert: true,
       },
-    );
+    };
+
   });
 
-  return model.bulkWrite(ops, { ordered: false });
+  debug('mergeOperations', ops.length);
+
+  const sortedOps = orderBy(ops, ['updateOne.filter._id'], ['asc']);
+
+  debug('mergeOperations', sortedOps.length);
+
+  return model.bulkWrite(sortedOps, { ordered: false });
 
 }
