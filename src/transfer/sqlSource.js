@@ -48,4 +48,14 @@ export const columns = {
     'barcodes',
     'egaisBoxIds',
   ],
+  EgaisMarkOperation: [
+    'xid as id',
+    'site',
+    'egaisMarkId',
+    'documentId',
+    'type',
+    'egaisBoxId',
+    'timestamp',
+    'quantity',
+  ]
 };

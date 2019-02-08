@@ -33,15 +33,7 @@ async function get(model) {
 
   debug(name, data.length, nextOffset);
 
-  if (name === 'EgaisMarkOperation') {
-
-    await mongo.mergeOperations(data);
-
-  } else {
-
-    await model.merge(data);
-
-  }
+  await model.merge(data);
 
   namedOffset.offset = nextOffset;
 

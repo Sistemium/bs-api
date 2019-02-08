@@ -1,12 +1,12 @@
 import log from 'sistemium-telegram/services/log';
 
-import ArticleDoc from '../mongo/model/ArticleDoc';
+// import ArticleDoc from '../mongo/model/ArticleDoc';
+// import EgaisMark from '../mongo/model/EgaisMark';
 
 import fromSTApi from './fromSTApi';
 import * as mongo from '../mongo';
 import sqlSource from './sqlSource';
 
-// eslint-disable-next-line
 const { debug, error } = log('transfer');
 
 transferAll()
@@ -18,8 +18,8 @@ transferAll()
   });
 
 process.on('SIGINT', async () => {
-  await mongo.disconnect();
-  await sqlSource.disconnect();
+  error('SIGINT');
+  await finish();
   process.exit();
 });
 
@@ -31,17 +31,24 @@ async function transferAll() {
   debug('connected');
 
 
-  // await fromSTApi('EgaisBox');
-
   try {
-    await fromSTApi(ArticleDoc);
-    // await fromSTApi('EgaisMark');
+    // await fromSTApi(require('../mongo/model/EgaisMark').default);
+    // await fromSTApi('EgaisBox');
+    // await fromSTApi(ArticleDoc);
+    await fromSTApi({
+      modelName: 'EgaisMarkOperation',
+      merge: require('../mongo/model/EgaisMark').mergeOperations,
+    });
   } catch (e) {
     error(e.message);
-    await mongo.disconnect();
-    await sqlSource.disconnect();
   }
 
-  // await fromSTApi('EgaisMarkOperation');
+  await finish();
 
+}
+
+
+async function finish() {
+  await mongo.disconnect().catch(error);
+  await sqlSource.disconnect().catch(error);
 }

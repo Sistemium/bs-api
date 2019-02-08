@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+import { merge } from '../extentions';
 
 const schema = new mongoose.Schema({
   barcode: String,
@@ -22,4 +23,43 @@ schema.set('toJSON', {
 schema.index({ ts: -1 });
 schema.index({ isProcessed: 1 });
 
-export default mongoose.model('EgaisMark', schema);
+schema.statics.merge = merge;
+schema.statics.mergeOperations = mergeOperations;
+
+const model = mongoose.model('EgaisMark', schema);
+
+export default model;
+
+export async function mergeOperations(items) {
+
+  const ops = [];
+
+  const cts = new Date();
+
+  items.forEach(item => {
+
+    const key = `operations.${item.documentId}`;
+
+    ops.push(
+      {
+        updateOne: {
+          filter: { _id: item.egaisMarkId },
+          update: {
+            $set: {
+              [key]: item,
+              isProcessed: false,
+            },
+            $setOnInsert: {
+              cts,
+            },
+            $currentDate: { ts: true },
+          },
+          upsert: true,
+        },
+      },
+    );
+  });
+
+  return model.bulkWrite(ops, { ordered: false });
+
+}
