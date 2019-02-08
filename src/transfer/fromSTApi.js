@@ -76,7 +76,7 @@ async function getFromSQL(name, offset) {
 
   return {
     data,
-    headers: { [OFFSET_HEADER]: PAGE_SIZE + startAt },
+    headers: { [OFFSET_HEADER]: data.length + startAt },
     status: 'OK',
   };
 
