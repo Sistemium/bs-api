@@ -30,15 +30,16 @@ router.get('/EgaisBox/:id?', getHandler(EgaisBox));
 function postHandler(model) {
   return async ctx => {
 
-    const { request: { body }, path } = ctx;
+    const { request: { body }, path, state: { site } } = ctx;
 
     ctx.assert(Array.isArray(body), 400, 'Body must be an array');
+    ctx.assert(site, 400, 'Undefined site');
 
     debug('POST', path, body.length);
 
     try {
 
-      ctx.body = await model.merge(body);
+      ctx.body = await model.merge(body, { site });
 
     } catch (err) {
       ctx.throw(500);
