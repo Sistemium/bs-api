@@ -39,14 +39,14 @@ export default async function (processBox, writeDocId) {
     let boxId = null;
     let lastTimestamp = '';
 
-    each(operations, operation => {
+    each(operations, ({ timestamp, quantity, egaisBoxId }) => {
 
-      sumQuantity += operation.quantity;
+      sumQuantity += quantity;
 
-      if (operation.quantity === 1 && operation.ts > lastTimestamp) {
+      if (quantity === 1 && timestamp > lastTimestamp) {
 
-        lastTimestamp = operation.ts;
-        boxId = operation.egaisBoxId;
+        lastTimestamp = timestamp;
+        boxId = egaisBoxId;
 
       }
 
