@@ -5,6 +5,7 @@ import morgan from 'koa-morgan';
 import * as mongo from './mongo';
 
 import api from './api';
+import auth from './api/auth';
 
 const { debug, error } = log('index');
 const { REST_PORT } = process.env;
@@ -21,6 +22,7 @@ mongo.connect()
 
 app
   .use(morgan(':method :url :status :res[content-length] - :response-time ms'))
+  .use(auth)
   .use(bodyParser({ jsonLimit: '100mb' }))
   .use(api.routes())
   .use(api.allowedMethods())
