@@ -1,4 +1,7 @@
 import omit from 'lodash/omit';
+import setDefaults from 'lodash/defaults';
+
+/* eslint-disable import/prefer-default-export */
 
 /**
  * Merge collection data
@@ -10,11 +13,7 @@ export async function merge(items, defaults) {
 
   const ops = [];
 
-  const $setOnInsert = { cts: new Date() };
-
-  if (defaults) {
-    Object.assign($setOnInsert, defaults);
-  }
+  const cts = new Date();
 
   items.forEach(item => {
 
@@ -22,29 +21,20 @@ export async function merge(items, defaults) {
       this.importData.call(item);
     }
 
-    ops.push(
-      {
-        updateOne: {
-          filter: { _id: item.id },
-          update: {
-            $set: omit(item, ['id', 'ts', 'cts']),
-            $currentDate: { ts: true },
-            $setOnInsert,
-          },
-          upsert: true,
+    ops.push({
+      updateOne: {
+        filter: { _id: item.id },
+        update: {
+          $set: setDefaults(omit(item, ['id', 'ts', 'cts']), defaults),
+          $currentDate: { ts: true },
+          $setOnInsert: { cts },
         },
+        upsert: true,
       },
-    );
+    });
+
   });
 
   return this.bulkWrite(ops, { ordered: false });
-
-}
-
-export async function findById(id) {
-
-  const filter = id ? { _id: id } : {};
-
-  return this.find(filter);
 
 }
