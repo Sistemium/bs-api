@@ -1,10 +1,20 @@
 import omit from 'lodash/omit';
 
-export async function merge(items) {
+/**
+ * Merge collection data
+ * @param {Array} items
+ * @param {Object} [defaults]
+ * @returns {Promise}
+ */
+export async function merge(items, defaults) {
 
   const ops = [];
 
-  const cts = new Date();
+  const $setOnInsert = { cts: new Date() };
+
+  if (defaults) {
+    Object.assign($setOnInsert, defaults);
+  }
 
   items.forEach(item => {
 
@@ -18,10 +28,8 @@ export async function merge(items) {
           filter: { _id: item.id },
           update: {
             $set: omit(item, ['id', 'ts', 'cts']),
-            $setOnInsert: {
-              cts,
-            },
             $currentDate: { ts: true },
+            $setOnInsert,
           },
           upsert: true,
         },

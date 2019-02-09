@@ -8,7 +8,7 @@ import orderBy from 'lodash/orderBy';
 import { merge } from '../extentions';
 
 // eslint-disable-next-line
-const { debug } = log('transfer');
+const { debug } = log('EgaisMark');
 
 const schema = new mongoose.Schema({
   barcode: String,
@@ -69,8 +69,6 @@ export async function mergeOperations(items) {
   debug('mergeOperations', ops.length);
 
   const sortedOps = orderBy(ops, ['updateOne.filter._id'], ['asc']);
-
-  debug('mergeOperations', sortedOps.length);
 
   return model.bulkWrite(sortedOps, { ordered: false });
 

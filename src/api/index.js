@@ -11,129 +11,59 @@ const router = new Router();
 
 export default router;
 
-router.post('/mark', async ctx => {
+router.post('/EgaisMark', postHandler(EgaisMark));
+router.get('/EgaisMark/:id?', getHandler(EgaisMark));
 
-  const { header: { authorization }, request: { body } } = ctx;
+router.post('/EgaisMarkOperation', postHandler({ merge: mergeOperations }));
 
-  debug('POST /mark', authorization);
+router.post('/ArticleDoc', postHandler(ArticleDoc));
+router.get('/ArticleDoc/:id?', getHandler(ArticleDoc));
 
-  try {
+router.post('/EgaisBox', postHandler(EgaisBox));
+router.get('/EgaisBox/:id?', getHandler(EgaisBox));
 
-    await EgaisMark.merge(body);
 
-    ctx.body = 'Marks inserted';
+/*
+  Private
+ */
 
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
+function postHandler(model) {
+  return async ctx => {
 
-});
+    const { request: { body }, path } = ctx;
 
-router.get('/mark/:id?', async ctx => {
+    ctx.assert(Array.isArray(body), 400, 'Body must be an array');
 
-  const { header: { authorization }, params: { id } } = ctx;
+    debug('POST', path, body.length);
 
-  debug('GET /mark', authorization);
+    try {
 
-  try {
+      ctx.body = await model.merge(body);
 
-    ctx.body = await EgaisMark.findById(id);
+    } catch (err) {
+      ctx.throw(500);
+      error(err.name, err.message);
+    }
 
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
+  };
+}
 
-});
 
-router.post('/operation', async ctx => {
+function getHandler(model) {
+  return async ctx => {
 
-  const { header: { authorization }, request: { body } } = ctx;
+    const { params: { id }, path } = ctx;
 
-  debug('POST /operation', authorization);
+    debug('GET', path, id);
 
-  try {
+    try {
 
-    await mergeOperations(body);
+      ctx.body = await model.findById(id);
 
-    ctx.body = 'Operations inserted';
+    } catch (err) {
+      ctx.throw(500);
+      error(err.name, err.message);
+    }
 
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
-
-});
-
-router.post('/articledoc', async ctx => {
-
-  const { header: { authorization }, request: { body } } = ctx;
-
-  debug('POST /articledoc', authorization);
-
-  try {
-
-    await ArticleDoc.merge(body);
-
-    ctx.body = 'Article Docs inserted';
-
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
-
-});
-
-router.get('/articledoc/:id?', async ctx => {
-
-  const { header: { authorization }, params: { id } } = ctx;
-
-  debug('GET /articledoc', authorization);
-
-  try {
-
-    ctx.body = await ArticleDoc.findById(id);
-
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
-
-});
-
-router.post('/egaisbox', async ctx => {
-
-  const { header: { authorization }, request: { body } } = ctx;
-
-  debug('POST /egaisbox', authorization);
-
-  try {
-
-    await EgaisBox.merge(body);
-
-    ctx.body = 'Egais box inserted';
-
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
-
-});
-
-router.get('/egaisbox/:id?', async ctx => {
-
-  const { header: { authorization }, params: { id } } = ctx;
-
-  debug('GET /egaisbox', authorization);
-
-  try {
-
-    ctx.body = await EgaisBox.findById(id);
-
-  } catch (err) {
-    ctx.response.status = 500;
-    error(err.name, err.message);
-  }
-
-});
+  };
+}
