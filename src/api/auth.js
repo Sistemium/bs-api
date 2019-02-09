@@ -1,7 +1,9 @@
-import { roles } from 'sistemium-telegram/services/auth';
+import { roles as getGoles } from 'sistemium-telegram/services/auth';
 import log from 'sistemium-telegram/services/log';
 
 const { debug, error } = log('api');
+
+const REQUIRED_ROLE = 'bs.1c';
 
 export default async function (ctx, next) {
 
@@ -11,13 +13,18 @@ export default async function (ctx, next) {
 
   try {
 
-    const { account, roles: { site } } = await roles(authorization);
+    const { account, roles } = await getGoles(authorization);
+    const { site, [REQUIRED_ROLE]: hasAuth } = roles;
 
-    debug('authorized', site, `"${account.name}"`);
+    if (!hasAuth) {
+      ctx.throw(403);
+    }
+
+    debug('authorized:', site, `"${account.name}"`);
     state.site = site;
 
   } catch (e) {
-    error('auth', e.response && e.response.status, e.message);
+    error('auth:', e.message);
     ctx.throw(401);
   }
 
