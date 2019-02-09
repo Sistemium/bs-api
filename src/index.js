@@ -17,7 +17,10 @@ api.prefix('/api');
 debug('starting on port', REST_PORT);
 
 mongo.connect()
-  .then(() => debug('mongo connected'))
+  .then(mongoose => {
+    const { connection: { db: { databaseName } } } = mongoose;
+    debug('mongo connected:', databaseName);
+  })
   .catch(e => error('mongo connect error', e.message));
 
 app
