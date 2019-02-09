@@ -41,9 +41,11 @@ function postHandler(model) {
 
       ctx.body = await model.merge(body, { site });
 
-    } catch (err) {
+    } catch ({ message, writeErrors }) {
+      if (writeErrors && writeErrors.length) {
+        error('writeErrors[0]:', JSON.stringify(writeErrors[0]));
+      }
       ctx.throw(500);
-      error(err.name, err.message);
     }
 
   };
