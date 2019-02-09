@@ -58,25 +58,29 @@ export default async function (processBox, writeDocId) {
       await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
 
     } else if (!boxId) {
-      error('no box id');
+      error('no box for mark:', mark.id);
     } else {
 
-      await processBox(boxId);
+      const boxProcessed = await processBox(boxId);
 
-      const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
-        .sort('-ts');
+      if (boxProcessed) {
 
-      if (doc) {
+        const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
+          .sort('-ts');
 
-        await writeDocId({
-          articleId: doc.articleId,
-          egaisMarkId: mark.id,
-          site: mark.site,
-          egaisBoxId: boxId,
-          barcode: mark.barcode,
-        });
+        if (doc) {
 
-        await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
+          await writeDocId({
+            articleId: doc.articleId,
+            egaisMarkId: mark.id,
+            site: mark.site,
+            egaisBoxId: boxId,
+            barcode: mark.barcode,
+          });
+
+          await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
+
+        }
 
       }
 

@@ -17,10 +17,15 @@ export async function processBox(boxId) {
     throw Error(`no box with id: ${boxId}`);
   }
 
+  if (!box.barcode) {
+    error('no barcode: ', boxId);
+    return false;
+  }
+
   const { parentId: paletteId, isProcessed } = box;
 
   if (isProcessed) {
-    return;
+    return true;
   }
 
   if (paletteId && paletteId !== '00000000-0000-0000-0000-000000000000') {
@@ -29,9 +34,13 @@ export async function processBox(boxId) {
 
   await externalDb.exportBox(box);
 
-  await EgaisBox.updateOne({ _id: boxId }, { isProcessed: true });
+  box.isProcessed = true;
+
+  await box.save();
 
   debug('processBox', box.barcode);
+
+  return true;
 
 }
 
