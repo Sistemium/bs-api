@@ -6,13 +6,10 @@ import { whilstAsync } from 'sistemium-telegram/services/async';
 import EgaisMark from '../mongo/model/EgaisMark';
 import ArticleDoc from '../mongo/model/ArticleDoc';
 
-// const mongoose = require('mongoose');
-
 const { debug, error } = log('marksProcessing');
 
 export default async function (processBox, writeDocId) {
 
-  // mongoose.set('debug', true);
   debug('start');
 
   // await unprocessMarks();
