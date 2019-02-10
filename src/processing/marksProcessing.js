@@ -1,6 +1,8 @@
 import log from 'sistemium-telegram/services/log';
 import each from 'lodash/each';
 import map from 'lodash/map';
+import orderBy from 'lodash/orderBy';
+
 import { whilstAsync } from 'sistemium-telegram/services/async';
 
 import EgaisMark from '../mongo/model/EgaisMark';
@@ -50,40 +52,46 @@ export default async function (processBox, writeDocId) {
     });
 
     if (sumQuantity !== 1) {
-
-      // debug('ignore', mark.id);
-      await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
-
+      mark.isProcessed = true;
     } else if (!boxId) {
       error('no box for mark:', mark.id);
     } else {
+      await processMark();
+    }
+
+    mark.operationsArray = orderBy(operations, ['timestamp'], ['desc']);
+
+    await mark.save();
+
+    mark = await cursor.next();
+
+    async function processMark() {
 
       const boxProcessed = await processBox(boxId);
 
-      if (boxProcessed) {
-
-        const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
-          .sort('-ts');
-
-        if (doc) {
-
-          await writeDocId({
-            articleId: doc.articleId,
-            egaisMarkId: mark.id,
-            site: mark.site,
-            egaisBoxId: boxId,
-            barcode: mark.barcode,
-          });
-
-          await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
-
-        }
-
+      if (!boxProcessed) {
+        return;
       }
 
-    }
+      const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
+        .sort('-ts');
 
-    mark = await cursor.next();
+      if (!doc) {
+        return;
+      }
+
+      await writeDocId({
+        articleId: doc.articleId,
+        egaisMarkId: mark.id,
+        site: mark.site,
+        egaisBoxId: boxId,
+        barcode: mark.barcode,
+      });
+
+      mark.isProcessed = true;
+      // await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
+
+    }
 
   });
 

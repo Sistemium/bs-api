@@ -21,6 +21,7 @@ const schema = new mongoose.Schema({
     index: true,
   },
   operations: Object,
+  operationsArray: Array,
   isProcessed: Boolean,
 });
 
