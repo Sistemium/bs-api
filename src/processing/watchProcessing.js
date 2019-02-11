@@ -36,7 +36,7 @@ function processing() {
   EgaisMark.watch()
     .on('change', triggerProcessing);
 
-  triggerProcessing();
+  return doProcessing();
 
   async function doProcessing() {
 
@@ -60,6 +60,8 @@ function processing() {
 
     } catch (e) {
       error(e);
+      await externalDb.disconnect()
+        .catch(error);
     }
 
     processStarted = false;
