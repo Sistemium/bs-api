@@ -12,6 +12,7 @@ const schema = new mongoose.Schema({
   parentId: String,
   site: Number,
   isProcessed: Boolean,
+  articleId: String,
 });
 
 schema.set('toJSON', {

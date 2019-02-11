@@ -10,22 +10,22 @@ export const externalDb = new External(SQLA_CONNECTION);
 
 export async function processBox(boxId) {
 
-  const box = await EgaisBox.findOne({ _id: boxId });
+  const box = await EgaisBox.findById(boxId);
 
   if (!box) {
     error('no box with id: ', boxId);
-    throw Error(`no box with id: ${boxId}`);
+    return null;
   }
 
   if (!box.barcode) {
     error('no barcode: ', boxId);
-    return false;
+    return null;
   }
 
   const { parentId: paletteId, isProcessed } = box;
 
   if (isProcessed) {
-    return true;
+    return box;
   }
 
   if (paletteId && paletteId !== '00000000-0000-0000-0000-000000000000') {
@@ -40,28 +40,30 @@ export async function processBox(boxId) {
 
   debug('processBox', box.barcode);
 
-  return true;
+  return box;
 
 }
 
 
 async function processPalette(boxId) {
 
-  const box = await EgaisBox.findOne({ _id: boxId });
+  const palette = await EgaisBox.findById(boxId);
 
-  if (!box) {
+  if (!palette) {
     error('processPalette', 'no id: ', boxId);
     return;
   }
 
-  if (box.isProcessed) {
+  if (palette.isProcessed) {
     return;
   }
 
-  await externalDb.exportPalette(box);
+  await externalDb.exportPalette(palette);
 
-  await EgaisBox.updateOne({ _id: boxId }, { isProcessed: true });
+  palette.isProcessed = true;
 
-  debug('processPalette', box.barcode);
+  await palette.save();
+
+  debug('processPalette', palette.barcode);
 
 }

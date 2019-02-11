@@ -10,9 +10,12 @@ import ArticleDoc from '../mongo/model/ArticleDoc';
 
 const { debug, error } = log('marksProcessing');
 
+const PROCESSING_LIMIT = parseInt(process.env.PROCESSING_LIMIT || 10000, 0);
+const PROCESSING_REPORT_COUNT = parseInt(process.env.PROCESSING_REPORT_COUNT || 10, 0);
+
 export default async function (processBox, writeDocId) {
 
-  debug('start');
+  debug('start batch size', PROCESSING_LIMIT);
 
   // await unprocessMarks();
 
@@ -26,11 +29,20 @@ export default async function (processBox, writeDocId) {
     return;
   }
 
-  const count = await query.countDocuments();
+  // const count = await query.countDocuments();
+  const countTotal = await EgaisMark.countDocuments({ isProcessed: false });
 
-  debug('marks to process:', count);
+  debug('total marks to process:', countTotal);
 
-  await whilstAsync(() => mark, async () => {
+  let sumIgnoreCount = 0;
+  let processedCount = 0;
+  let lastReportedCount = 0;
+
+  await whilstAsync(() => mark, processor);
+
+  debug('finish', processedCount, sumIgnoreCount);
+
+  async function processor() {
 
     const { operations } = mark;
 
@@ -53,15 +65,29 @@ export default async function (processBox, writeDocId) {
 
     if (sumQuantity !== 1) {
       mark.isProcessed = true;
+      sumIgnoreCount += 1;
+      // debug('sumQuantity', sumQuantity);
     } else if (!boxId) {
       error('no box for mark:', mark.id);
     } else {
       await processMark();
+      processedCount += 1;
     }
 
     mark.operationsArray = orderBy(operations, ['timestamp'], ['desc']);
 
+    if (!mark.isProcessed) {
+      mark.ts = new Date();
+    }
+
     await mark.save();
+
+    const nextCount = processedCount + sumIgnoreCount;
+
+    if (lastReportedCount + PROCESSING_REPORT_COUNT < nextCount) {
+      debug('progress', nextCount);
+      lastReportedCount = nextCount;
+    }
 
     mark = await cursor.next();
 
@@ -70,18 +96,36 @@ export default async function (processBox, writeDocId) {
       const boxProcessed = await processBox(boxId);
 
       if (!boxProcessed) {
+        error('box not processed', boxId);
         return;
       }
 
-      const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
-        .sort('-ts');
+      let { articleId } = boxProcessed;
 
-      if (!doc) {
+      if (!articleId) {
+
+        const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
+          .sort('ts');
+
+        if (!doc) {
+          error('no ArticleDoc', boxId);
+          return;
+        }
+
+        articleId = doc.articleId; // eslint-disable-line
+        boxProcessed.articleId = articleId;
+
+        await boxProcessed.save();
+
+      }
+
+      if (!articleId) {
+        error('no articleId', boxId);
         return;
       }
 
       await writeDocId({
-        articleId: doc.articleId,
+        articleId,
         egaisMarkId: mark.id,
         site: mark.site,
         egaisBoxId: boxId,
@@ -93,7 +137,7 @@ export default async function (processBox, writeDocId) {
 
     }
 
-  });
+  }
 
 }
 
