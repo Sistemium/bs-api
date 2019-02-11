@@ -30,6 +30,8 @@ export default class {
 
   async disconnect() {
     return new Promise((resolve, reject) => {
+
+      this.statements = {};
       this.connection.disconnect(err => {
         debug('disconnect', !err);
         if (!err) {
@@ -154,7 +156,7 @@ export default class {
       cts,
     } = params;
 
-    debug('exportMark', egaisMarkId, site);
+    // debug('exportMark', egaisMarkId, site);
 
     const sql = `merge into bs.WarehouseItem as d using with auto name (
       select 
