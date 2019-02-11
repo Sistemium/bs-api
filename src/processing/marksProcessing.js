@@ -19,7 +19,11 @@ export default async function (processBox, writeDocId) {
 
   // await unprocessMarks();
 
-  const query = EgaisMark.find({ isProcessed: { $ne: true } }).sort('-ts');
+  const query = EgaisMark.find({ isProcessed: false })
+    .sort('ts')
+    .hint('egaisMarksProcessingTs')
+    .limit(PROCESSING_LIMIT);
+
   const cursor = query.cursor();
 
   let mark = await cursor.next();
