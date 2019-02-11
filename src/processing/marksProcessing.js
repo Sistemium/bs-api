@@ -159,6 +159,19 @@ export default async function (processBox, writeDocId) {
 
     }
 
+    // eslint-disable-next-line
+    function resetError(field, maxTs) {
+
+      if (mark[field].ts < maxTs) {
+
+        mark.isProcessed = false;
+
+        delete mark.error;
+
+      }
+
+    }
+
   }
 
 }
