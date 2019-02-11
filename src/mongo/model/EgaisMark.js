@@ -23,6 +23,7 @@ const schema = new mongoose.Schema({
   operations: Object,
   operationsArray: Array,
   isProcessed: Boolean,
+  error: String,
 });
 
 schema.set('toJSON', {
@@ -34,6 +35,7 @@ schema.set('toJSON', {
 
 schema.index({ ts: -1 });
 schema.index({ isProcessed: 1 });
+schema.index({ error: 1 });
 
 schema.statics.merge = merge;
 

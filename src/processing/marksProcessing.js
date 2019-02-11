@@ -75,7 +75,10 @@ export default async function (processBox, writeDocId) {
       sumIgnoreCount += 1;
       // debug('sumQuantity', sumQuantity);
     } else if (!boxId) {
-      error('no box for mark:', mark.id);
+      mark.error = `no box for mark: ${mark.id}`;
+      error(mark.error);
+      mark.isProcessed = true;
+      processedCount += 1;
     } else {
       await processMark();
       processedCount += 1;
@@ -103,7 +106,11 @@ export default async function (processBox, writeDocId) {
       const boxProcessed = await processBox(boxId);
 
       if (!boxProcessed) {
-        error('box not processed', boxId);
+
+        mark.error = `box not processed ${boxId}`;
+        error(mark.error);
+        mark.isProcessed = true;
+
         return;
       }
 
@@ -115,7 +122,11 @@ export default async function (processBox, writeDocId) {
           .sort('ts');
 
         if (!doc) {
-          error('no ArticleDoc', boxId);
+
+          mark.error = `no ArticleDoc ${boxId}`;
+          error(mark.error);
+          mark.isProcessed = true;
+
           return;
         }
 
@@ -127,7 +138,11 @@ export default async function (processBox, writeDocId) {
       }
 
       if (!articleId) {
-        error('no articleId', boxId);
+
+        mark.error = `no articleId ${boxId}`;
+        error(mark.error);
+        mark.isProcessed = true;
+
         return;
       }
 
