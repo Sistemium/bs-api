@@ -3,7 +3,7 @@ import each from 'lodash/each';
 import map from 'lodash/map';
 import orderBy from 'lodash/orderBy';
 
-import { whilstAsync } from 'sistemium-telegram/services/async';
+import { eachSeriesAsync } from 'sistemium-telegram/services/async';
 
 import EgaisMark from '../mongo/model/EgaisMark';
 import ArticleDoc from '../mongo/model/ArticleDoc';
@@ -13,22 +13,25 @@ const { debug, error } = log('marksProcessing');
 const PROCESSING_LIMIT = parseInt(process.env.PROCESSING_LIMIT || 10000, 0);
 const PROCESSING_REPORT_COUNT = parseInt(process.env.PROCESSING_REPORT_COUNT || 10, 0);
 
+/* eslint-disable no-param-reassign */
+
 export default async function (processBox, writeDocId) {
 
   debug('start batch size', PROCESSING_LIMIT);
 
   // await unprocessMarks();
 
-  const query = EgaisMark.find({ isProcessed: false })
+  const marks = await EgaisMark.find({ isProcessed: false })
+    .batchSize(PROCESSING_LIMIT)
     .sort('ts')
     .hint('egaisMarksProcessingTs')
     .limit(PROCESSING_LIMIT);
 
-  const cursor = query.cursor();
+  // const cursor = query.cursor();
 
-  let mark = await cursor.next();
+  // let mark = await cursor.next();
 
-  if (!mark) {
+  if (!marks.length) {
     debug('no marks to process');
     return;
   }
@@ -42,11 +45,11 @@ export default async function (processBox, writeDocId) {
   let processedCount = 0;
   let lastReportedCount = 0;
 
-  await whilstAsync(() => mark, processor);
+  await eachSeriesAsync(marks, processor);
 
   debug('finish', processedCount, sumIgnoreCount);
 
-  async function processor() {
+  async function processor(mark) {
 
     const { operations } = mark;
 
@@ -93,7 +96,7 @@ export default async function (processBox, writeDocId) {
       lastReportedCount = nextCount;
     }
 
-    mark = await cursor.next();
+    // mark = await cursor.next();
 
     async function processMark() {
 
