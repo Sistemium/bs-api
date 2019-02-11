@@ -6,10 +6,11 @@ import ArticleDoc from '../mongo/model/ArticleDoc';
 import EgaisBox from '../mongo/model/EgaisBox';
 import EgaisMark from '../mongo/model/EgaisMark';
 import marksProcessing from './marksProcessing';
-import { externalDb, processBox } from './processing';
+import { processBox } from './processing';
+import ExternalDB from './external';
 
+const { SQLA_CONNECTION } = process.env;
 const { debug, error } = log('watchProcessing');
-
 const WATCH_DEBOUNCE = parseInt(process.env.WATCH_DEBOUNCE || 10000, 0);
 
 process.on('SIGINT', async () => {
@@ -47,12 +48,18 @@ function processing() {
 
     processStarted = true;
 
+    const externalDb = new ExternalDB(SQLA_CONNECTION);
+
     try {
+
 
       await externalDb.connect();
       debug('external db connected');
 
-      await marksProcessing(processBox, args => externalDb.exportMark(args));
+      await marksProcessing(
+        box => processBox(box, externalDb),
+        args => externalDb.exportMark(args),
+      );
       debug('finish');
 
       await externalDb.disconnect();

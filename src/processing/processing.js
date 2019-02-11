@@ -1,14 +1,18 @@
 import log from 'sistemium-telegram/services/log';
 import EgaisBox from '../mongo/model/EgaisBox';
-import External from './external';
 
 const { debug, error } = log('processing');
 
-const { SQLA_CONNECTION } = process.env;
+/* eslint-disable import/prefer-default-export */
 
-export const externalDb = new External(SQLA_CONNECTION);
+/**
+ *
+ * @param boxId
+ * @param externalDb {ExternalDB}
+ * @returns {Promise<null>}
+ */
 
-export async function processBox(boxId) {
+export async function processBox(boxId, externalDb) {
 
   const box = await EgaisBox.findById(boxId);
 
@@ -29,7 +33,7 @@ export async function processBox(boxId) {
   }
 
   if (paletteId && paletteId !== '00000000-0000-0000-0000-000000000000') {
-    await processPalette(boxId);
+    await processPalette(boxId, externalDb);
   }
 
   await externalDb.exportBox(box);
@@ -44,8 +48,14 @@ export async function processBox(boxId) {
 
 }
 
+/**
+ *
+ * @param boxId
+ * @param externalDb {ExternalDB}
+ * @returns {Promise<null>}
+ */
 
-async function processPalette(boxId) {
+async function processPalette(boxId, externalDb) {
 
   const palette = await EgaisBox.findById(boxId);
 

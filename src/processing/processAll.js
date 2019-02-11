@@ -3,7 +3,7 @@ import log from 'sistemium-telegram/services/log';
 import * as mongo from '../mongo';
 
 import marksProcessing from './marksProcessing';
-import { externalDb, processBox } from './processing';
+import { processBox } from './processing';
 
 const { debug, error } = log('processAll');
 
@@ -13,7 +13,7 @@ processAll()
   .then(() => debug('done'))
   .catch(err => error(err.message));
 
-async function processAll() {
+async function processAll(externalDb) {
 
   await externalDb.connect();
   debug('external db connected');

@@ -5,7 +5,7 @@ import { serverDateTimeFormat } from 'sistemium-telegram/services/moments';
 // eslint-disable-next-line
 const { debug, error } = log('processing:external');
 
-export default class {
+export default class ExternalDB {
 
   constructor(connParams) {
     this.connParams = connParams;

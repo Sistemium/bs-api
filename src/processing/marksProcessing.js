@@ -10,7 +10,7 @@ import ArticleDoc from '../mongo/model/ArticleDoc';
 
 const { debug, error } = log('marksProcessing');
 
-const PROCESSING_LIMIT = parseInt(process.env.PROCESSING_LIMIT || 10000, 0);
+const PROCESSING_LIMIT = parseInt(process.env.PROCESSING_LIMIT || 1000, 0);
 const PROCESSING_REPORT_COUNT = parseInt(process.env.PROCESSING_REPORT_COUNT || 10, 0);
 
 /* eslint-disable no-param-reassign */
