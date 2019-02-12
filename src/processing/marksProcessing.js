@@ -162,6 +162,7 @@ export default async function (processBox, exportMark) {
         barcode: mark.barcode,
       });
 
+      mark.processingError = undefined;
       mark.isProcessed = true;
 
     }
