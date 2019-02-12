@@ -10,7 +10,7 @@ import ArticleDoc from '../mongo/model/ArticleDoc';
 
 const { debug, error } = log('marksProcessing');
 
-const PROCESSING_LIMIT = parseInt(process.env.PROCESSING_LIMIT || 1000, 0);
+const PROCESSING_LIMIT = parseInt(process.env.PROCESSING_LIMIT || 50, 0);
 const PROCESSING_REPORT_COUNT = parseInt(process.env.PROCESSING_REPORT_COUNT || 10, 0);
 
 /* eslint-disable no-param-reassign */
@@ -43,11 +43,12 @@ export default async function (processBox, exportMark) {
 
   let sumIgnoreCount = 0;
   let processedCount = 0;
+  let erroredCount = 0;
   let lastReportedCount = 0;
 
   await eachSeriesAsync(marks, processor);
 
-  debug('finish', processedCount, sumIgnoreCount);
+  debug('finish', `processed:${processedCount} ignored:${sumIgnoreCount} errored:${erroredCount}`);
 
   async function processor(mark) {
 
@@ -77,7 +78,7 @@ export default async function (processBox, exportMark) {
 
     } else if (!boxId) {
 
-      error(`no box for mark: ${mark.id}`);
+      error('no box for markId', mark.id);
 
       mark.processingError = 'NoBox';
       mark.isProcessed = true;
@@ -93,6 +94,10 @@ export default async function (processBox, exportMark) {
 
     if (!mark.isProcessed) {
       mark.ts = new Date();
+    }
+
+    if (mark.processingError) {
+      erroredCount += 1;
     }
 
     await mark.save();
@@ -112,7 +117,7 @@ export default async function (processBox, exportMark) {
 
       if (!boxProcessed) {
 
-        error(`box not processed ${boxId}`);
+        error('not processed boxId:', boxId);
 
         mark.processingError = 'NotProcessedBox';
         mark.isProcessed = true;
@@ -129,7 +134,7 @@ export default async function (processBox, exportMark) {
 
         if (!doc) {
 
-          error(`no ArticleDoc ${boxId}`);
+          error('no ArticleDoc for boxId:', boxId);
 
           mark.processingError = 'NoArticleDoc';
           mark.isProcessed = true;
@@ -147,7 +152,7 @@ export default async function (processBox, exportMark) {
 
       if (!articleId) {
 
-        error(`no articleId ${boxId}`);
+        error('no articleId for boxId:', boxId);
         mark.processingError = 'NoArticleId';
         mark.isProcessed = true;
 
