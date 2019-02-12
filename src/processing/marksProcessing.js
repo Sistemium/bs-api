@@ -15,7 +15,7 @@ const PROCESSING_REPORT_COUNT = parseInt(process.env.PROCESSING_REPORT_COUNT || 
 
 /* eslint-disable no-param-reassign */
 
-export default async function (processBox, writeDocId) {
+export default async function (processBox, exportMark) {
 
   debug('start batch size', PROCESSING_LIMIT);
 
@@ -71,14 +71,19 @@ export default async function (processBox, writeDocId) {
     });
 
     if (sumQuantity !== 1) {
+
       mark.isProcessed = true;
       sumIgnoreCount += 1;
-      // debug('sumQuantity', sumQuantity);
+
     } else if (!boxId) {
-      mark.error = `no box for mark: ${mark.id}`;
-      error(mark.error);
+
+      error(`no box for mark: ${mark.id}`);
+
+      mark.processingError = 'NoBox';
       mark.isProcessed = true;
+
       processedCount += 1;
+
     } else {
       await processMark();
       processedCount += 1;
@@ -94,7 +99,7 @@ export default async function (processBox, writeDocId) {
 
     const nextCount = processedCount + sumIgnoreCount;
 
-    if (lastReportedCount + PROCESSING_REPORT_COUNT < nextCount) {
+    if (lastReportedCount + PROCESSING_REPORT_COUNT <= nextCount) {
       debug('progress', nextCount);
       lastReportedCount = nextCount;
     }
@@ -107,8 +112,9 @@ export default async function (processBox, writeDocId) {
 
       if (!boxProcessed) {
 
-        mark.error = `box not processed ${boxId}`;
-        error(mark.error);
+        error(`box not processed ${boxId}`);
+
+        mark.processingError = 'NotProcessedBox';
         mark.isProcessed = true;
 
         return;
@@ -123,11 +129,13 @@ export default async function (processBox, writeDocId) {
 
         if (!doc) {
 
-          mark.error = `no ArticleDoc ${boxId}`;
-          error(mark.error);
+          error(`no ArticleDoc ${boxId}`);
+
+          mark.processingError = 'NoArticleDoc';
           mark.isProcessed = true;
 
           return;
+
         }
 
         articleId = doc.articleId; // eslint-disable-line
@@ -139,14 +147,14 @@ export default async function (processBox, writeDocId) {
 
       if (!articleId) {
 
-        mark.error = `no articleId ${boxId}`;
-        error(mark.error);
+        error(`no articleId ${boxId}`);
+        mark.processingError = 'NoArticleId';
         mark.isProcessed = true;
 
         return;
       }
 
-      await writeDocId({
+      await exportMark({
         articleId,
         egaisMarkId: mark.id,
         site: mark.site,
@@ -155,20 +163,6 @@ export default async function (processBox, writeDocId) {
       });
 
       mark.isProcessed = true;
-      // await EgaisMark.updateOne({ _id: mark.id }, { isProcessed: true });
-
-    }
-
-    // eslint-disable-next-line
-    function resetError(field, maxTs) {
-
-      if (mark[field].ts < maxTs) {
-
-        mark.isProcessed = false;
-
-        delete mark.error;
-
-      }
 
     }
 

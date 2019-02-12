@@ -76,6 +76,6 @@ async function processPalette(boxId, externalDb) {
 
   debug('processPalette', palette.barcode);
 
-  return palette
+  return palette;
 
 }
