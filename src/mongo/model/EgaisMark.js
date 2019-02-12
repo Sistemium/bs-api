@@ -43,6 +43,8 @@ const model = mongoose.model('EgaisMark', schema);
 
 export default model;
 
+export const ERROR_NO_ARTICLE_DOC = 'NoArticleDoc';
+
 export async function mergeOperations(items) {
 
   const cts = new Date();

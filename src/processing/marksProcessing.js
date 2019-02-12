@@ -5,7 +5,7 @@ import orderBy from 'lodash/orderBy';
 
 import { eachSeriesAsync } from 'sistemium-telegram/services/async';
 
-import EgaisMark from '../mongo/model/EgaisMark';
+import EgaisMark, * as em from '../mongo/model/EgaisMark';
 import ArticleDoc from '../mongo/model/ArticleDoc';
 
 const { debug, error } = log('marksProcessing');
@@ -136,7 +136,7 @@ export default async function (processBox, exportMark) {
 
           error('no ArticleDoc for boxId:', boxId);
 
-          mark.processingError = 'NoArticleDoc';
+          mark.processingError = em.ERROR_NO_ARTICLE_DOC;
           mark.isProcessed = true;
 
           return;
