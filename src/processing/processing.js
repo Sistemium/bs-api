@@ -9,7 +9,7 @@ const { debug, error } = log('processing');
  *
  * @param boxId
  * @param externalDb {ExternalDB}
- * @returns {Promise<null>}
+ * @returns {Promise}
  */
 
 export async function processBox(boxId, externalDb) {
@@ -22,7 +22,7 @@ export async function processBox(boxId, externalDb) {
   }
 
   if (!box.barcode) {
-    error('no barcode: ', boxId);
+    // error('no barcode: ', boxId);
     return null;
   }
 
@@ -52,7 +52,7 @@ export async function processBox(boxId, externalDb) {
  *
  * @param boxId
  * @param externalDb {ExternalDB}
- * @returns {Promise<null>}
+ * @returns {Promise}
  */
 
 async function processPalette(boxId, externalDb) {
@@ -61,11 +61,11 @@ async function processPalette(boxId, externalDb) {
 
   if (!palette) {
     error('processPalette', 'no id: ', boxId);
-    return;
+    return null;
   }
 
   if (palette.isProcessed) {
-    return;
+    return null;
   }
 
   await externalDb.exportPalette(palette);
@@ -75,5 +75,7 @@ async function processPalette(boxId, externalDb) {
   await palette.save();
 
   debug('processPalette', palette.barcode);
+
+  return palette
 
 }
