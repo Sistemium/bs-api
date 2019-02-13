@@ -4,6 +4,7 @@ import log from 'sistemium-telegram/services/log';
 import EgaisMark, { mergeOperations } from '../mongo/model/EgaisMark';
 import ArticleDoc from '../mongo/model/ArticleDoc';
 import EgaisBox from '../mongo/model/EgaisBox';
+import EgaisArticle from '../mongo/model/EgaisArticle';
 
 const { debug, error } = log('api');
 
@@ -21,6 +22,9 @@ router.get('/ArticleDoc/:id?', getHandler(ArticleDoc));
 
 router.post('/EgaisBox', postHandler(EgaisBox));
 router.get('/EgaisBox/:id?', getHandler(EgaisBox));
+
+router.post('/EgaisArticle', postHandler(EgaisArticle));
+router.get('/EgaisArticle/:id?', getHandler(EgaisArticle));
 
 
 /*
