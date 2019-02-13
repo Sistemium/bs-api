@@ -5,6 +5,7 @@ import EgaisMark, { mergeOperations } from '../mongo/model/EgaisMark';
 import ArticleDoc from '../mongo/model/ArticleDoc';
 import EgaisBox from '../mongo/model/EgaisBox';
 import EgaisArticle from '../mongo/model/EgaisArticle';
+import EgaisProducer from '../mongo/model/EgaisProducer';
 
 const { debug, error } = log('api');
 
@@ -25,6 +26,9 @@ router.get('/EgaisBox/:id?', getHandler(EgaisBox));
 
 router.post('/EgaisArticle', postHandler(EgaisArticle));
 router.get('/EgaisArticle/:id?', getHandler(EgaisArticle));
+
+router.post('/EgaisProducer', postHandler(EgaisProducer));
+router.get('/EgaisProducer/:id?', getHandler(EgaisProducer));
 
 
 /*
