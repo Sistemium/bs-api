@@ -1,7 +1,7 @@
 import Router from 'koa-router';
 import log from 'sistemium-telegram/services/log';
 
-import EgaisMark, { mergeOperations } from '../mongo/model/EgaisMark';
+import EgaisMark, { mergeOperations, mergeCancels } from '../mongo/model/EgaisMark';
 import ArticleDoc from '../mongo/model/ArticleDoc';
 import EgaisBox from '../mongo/model/EgaisBox';
 import EgaisArticle from '../mongo/model/EgaisArticle';
@@ -17,6 +17,7 @@ router.post('/EgaisMark', postHandler(EgaisMark));
 router.get('/EgaisMark/:id?', getHandler(EgaisMark));
 
 router.post('/EgaisMarkOperation', postHandler({ merge: mergeOperations }));
+router.post('/EgaisMarkCancel', postHandler({ merge: mergeCancels }));
 
 router.post('/ArticleDoc', postHandler(ArticleDoc));
 router.get('/ArticleDoc/:id?', getHandler(ArticleDoc));

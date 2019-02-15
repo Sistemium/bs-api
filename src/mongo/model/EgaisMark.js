@@ -4,6 +4,7 @@ import groupBy from 'lodash/groupBy';
 import map from 'lodash/map';
 import keyBy from 'lodash/keyBy';
 import orderBy from 'lodash/orderBy';
+import mapVales from 'lodash/mapValues';
 
 import { merge } from '../extentions';
 
@@ -24,6 +25,7 @@ const schema = new mongoose.Schema({
   operationsArray: Array,
   isProcessed: Boolean,
   processingError: String,
+  EgaisMarkCancel: Object,
 });
 
 schema.set('toJSON', {
@@ -44,6 +46,47 @@ const model = mongoose.model('EgaisMark', schema);
 export default model;
 
 export const ERROR_NO_ARTICLE_DOC = 'NoArticleDoc';
+
+export async function mergeCancels(items) {
+
+  const cts = new Date();
+
+  const byMark = groupBy(items, 'egaisMarkId');
+
+  const ops = map(byMark, (cancels, egaisMarkId) => {
+
+    const keys = keyBy(cancels, ({ documentId }) => `cancels.${documentId}`);
+
+    const opKeys = keyBy(cancels, ({ documentId }) => `operations.${documentId}`);
+
+    const opValues = mapVales(opKeys, () => undefined);
+
+    return {
+      updateOne: {
+        filter: { _id: egaisMarkId },
+        update: {
+          $set: {
+            ...keys,
+            isProcessed: false,
+            ...opValues,
+          },
+          $setOnInsert: {
+            cts,
+          },
+          $currentDate: { ts: true },
+        },
+        upsert: true,
+      },
+    };
+
+  });
+
+  debug('mergeCancels', ops.length);
+
+  const sortedOps = orderBy(ops, ['updateOne.filter._id'], ['asc']);
+
+  return model.bulkWrite(sortedOps, { ordered: false });
+}
 
 export async function mergeOperations(items) {
 
