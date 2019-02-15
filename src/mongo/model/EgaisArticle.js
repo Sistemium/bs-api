@@ -11,7 +11,7 @@ const schema = new mongoose.Schema({
   capacity: Number,
   vCode: String,
   producerId: String,
-  site: String,
+  site: Number,
 });
 
 schema.statics.merge = merge;

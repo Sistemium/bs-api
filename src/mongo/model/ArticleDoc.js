@@ -12,6 +12,7 @@ const schema = new mongoose.Schema({
   quantity: Number,
   barcodes: Array,
   egaisBoxIds: Array,
+  site: Number,
 });
 
 schema.set('toJSON', {
