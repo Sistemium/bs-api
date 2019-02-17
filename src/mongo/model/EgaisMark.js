@@ -25,7 +25,7 @@ const schema = new mongoose.Schema({
   operationsArray: Array,
   isProcessed: Boolean,
   processingError: String,
-  EgaisMarkCancel: Object,
+  cancels: Object,
 });
 
 schema.set('toJSON', {
