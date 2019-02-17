@@ -4,6 +4,7 @@ import omit from 'lodash/omit';
 const schema = new Schema({
   cts: Date,
   ts: Date,
+  timestamp: Date,
   articleId: String,
   volume: Number,
   volumeDoc: Number,
@@ -34,12 +35,15 @@ async function merge(items, defaults) {
   const ops = items.map(item => {
 
     const { articleId, site = defaults.site } = item;
+    const $set = omit(item, ['_id', 'id', 'ts', 'cts']);
+
+    $set.timestamp = cts;
 
     return {
       updateOne: {
         filter: { articleId, site },
         update: {
-          $set: omit(item, ['_id', 'id', 'ts', 'cts']),
+          $set,
           $currentDate: { ts: true },
           $setOnInsert: { cts },
         },
