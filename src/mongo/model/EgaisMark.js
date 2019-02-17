@@ -37,7 +37,7 @@ schema.set('toJSON', {
 
 schema.index({ ts: -1 });
 schema.index({ isProcessed: 1 });
-schema.index({ processingError: 1, sparse: true });
+schema.index({ processingError: 1 }, { sparse: true, name: 'egaisMarksProcessingError' });
 
 schema.statics.merge = merge;
 
