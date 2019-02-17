@@ -11,17 +11,15 @@ import setDefaults from 'lodash/defaults';
  */
 export async function merge(items, defaults) {
 
-  const ops = [];
-
   const cts = new Date();
 
-  items.forEach(item => {
+  const ops = items.map(item => {
 
     if (this.importData) {
       this.importData.call(item);
     }
 
-    ops.push({
+    return {
       updateOne: {
         filter: { _id: item.id },
         update: {
@@ -31,7 +29,7 @@ export async function merge(items, defaults) {
         },
         upsert: true,
       },
-    });
+    };
 
   });
 
