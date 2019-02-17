@@ -59,7 +59,7 @@ export async function mergeCancels(items) {
 
     const opKeys = keyBy(cancels, ({ documentId }) => `operations.${documentId}`);
 
-    const opValues = mapVales(opKeys, () => undefined);
+    const $unset = mapVales(opKeys, () => 1);
 
     return {
       updateOne: {
@@ -68,8 +68,8 @@ export async function mergeCancels(items) {
           $set: {
             ...keys,
             isProcessed: false,
-            ...opValues,
           },
+          $unset,
           $setOnInsert: {
             cts,
           },
