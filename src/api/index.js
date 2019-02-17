@@ -6,6 +6,7 @@ import ArticleDoc from '../mongo/model/ArticleDoc';
 import EgaisBox from '../mongo/model/EgaisBox';
 import EgaisArticle from '../mongo/model/EgaisArticle';
 import EgaisProducer from '../mongo/model/EgaisProducer';
+import Stock from '../mongo/model/Stock';
 
 const { debug, error } = log('api');
 
@@ -31,6 +32,9 @@ router.get('/EgaisArticle/:id?', getHandler(EgaisArticle));
 router.post('/EgaisProducer', postHandler(EgaisProducer));
 router.get('/EgaisProducer/:id?', getHandler(EgaisProducer));
 
+router.post('/Stock', postHandler(Stock));
+// router.get('/Stock', getHandler(Stock));
+
 
 /*
   Private
@@ -54,7 +58,7 @@ function postHandler(model) {
       if (writeErrors && writeErrors.length) {
         error('writeErrors[0]:', JSON.stringify(writeErrors[0]));
       }
-      ctx.throw(500);
+      ctx.throw(500, message);
     }
 
   };
