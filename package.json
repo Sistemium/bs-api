@@ -13,6 +13,7 @@
     "lodash": "^4.17.11",
     "mongoose": "^5.4.10",
     "sistemium-telegram": "^1.2.9",
+    "sql-template-strings": "^2.2.2",
     "sqlanywhere": "^1.0.24"
   },
   "devDependencies": {
