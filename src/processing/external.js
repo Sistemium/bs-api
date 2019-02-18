@@ -2,6 +2,8 @@ import db from 'sqlanywhere';
 import log from 'sistemium-telegram/services/log';
 import { serverDateTimeFormat } from 'sistemium-telegram/services/moments';
 
+import SQL from 'sql-template-strings';
+
 // eslint-disable-next-line
 const { debug, error } = log('processing:external');
 
@@ -92,23 +94,21 @@ export default class ExternalDB {
 
     debug('exportPalette', id, barcode, site);
 
-    const sql = `merge into bs.WarehousePalette as d using with auto name (
+    const sql = SQL`merge into bs.WarehousePalette as d using with auto name (
       select 
-        ? as xid,
-        ? as barcode,
+        ${id} as xid,
+        ${barcode} as barcode,
         'stock' as processing,
-        ? as site,
-        ? as deviceCts
+        ${site} as site,
+        ${serverDateTimeFormat(cts)} as deviceCts
     ) as t on t.xid = d.xid
     when not matched then insert
     when matched then skip
     `;
 
-    const prepared = await this.prepare(sql);
+    const prepared = await this.prepare(sql.query);
 
-    const values = [id, barcode, site, serverDateTimeFormat(cts)];
-
-    await this.exec(prepared, values);
+    await this.exec(prepared, sql.values);
 
   }
 
@@ -124,24 +124,22 @@ export default class ExternalDB {
 
     debug('exportBox', id, barcode, site);
 
-    const sql = `merge into bs.WarehouseBox as d using with auto name (
+    const sql = SQL`merge into bs.WarehouseBox as d using with auto name (
       select 
-        ? as xid,
-        ? as barcode,
-        (select id from bs.WarehousePalette where xid = ?) as currentPalette,
-        ? as site,
+        ${id} as xid,
+        ${barcode} as barcode,
+        (select id from bs.WarehousePalette where xid = ${parentId}) as currentPalette,
+        ${site} as site,
         'stock' as processing,
-        ? as deviceCts
+        ${serverDateTimeFormat(cts)} as deviceCts
     ) as t on t.xid = d.xid
     when not matched then insert
     when matched then skip
     `;
 
-    const prepared = await this.prepare(sql);
+    const prepared = await this.prepare(sql.query);
 
-    const values = [id, barcode, parentId, site, serverDateTimeFormat(cts)];
-
-    await this.exec(prepared, values);
+    await this.exec(prepared, sql.values);
 
   }
 
@@ -158,29 +156,25 @@ export default class ExternalDB {
 
     // debug('exportMark', egaisMarkId, site);
 
-    const sql = `merge into bs.WarehouseItem as d using with auto name (
+    const sql = SQL`merge into bs.WarehouseItem as d using with auto name (
       select 
         a.id as article,
-        (select id from bs.WarehouseBox where xid = ?) as currentBox,
-        ? as barcode,
-        ? as xid,
+        (select id from bs.WarehouseBox where xid = ${egaisBoxId}) as currentBox,
+        ${barcode} as barcode,
+        ${egaisMarkId} as xid,
         'stock' as processing,
-        ? as site,
-        ? as deviceCts
+        ${site} as site,
+        ${serverDateTimeFormat(cts)} as deviceCts
       from bs.ArticleTable a
-      where a.xid = ?
+      where a.xid = ${articleId}
     ) as t on t.xid = d.xid
     when not matched then insert
     when matched then skip
     `;
 
-    const prepared = await this.prepare(sql);
+    const prepared = await this.prepare(sql.query);
 
-    const values = [egaisBoxId, barcode, egaisMarkId, site, serverDateTimeFormat(cts), articleId];
-
-    await this.exec(prepared, values);
-
-    // return this.commit();
+    await this.exec(prepared, sql.values);
 
   }
 
