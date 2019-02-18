@@ -10,6 +10,8 @@ import Stock from '../mongo/model/Stock';
 
 const { debug, error } = log('api');
 
+const PAGE_SIZE_HEADER = 'x-page-size';
+
 const router = new Router();
 
 export default router;
@@ -33,7 +35,7 @@ router.post('/EgaisProducer', postHandler(EgaisProducer));
 router.get('/EgaisProducer/:id?', getHandler(EgaisProducer));
 
 router.post('/Stock', postHandler(Stock));
-// router.get('/Stock', getHandler(Stock));
+router.get('/Stock', getManyHandler(Stock));
 
 
 /*
@@ -75,6 +77,25 @@ function getHandler(model) {
     try {
 
       ctx.body = await model.findById(id);
+
+    } catch (err) {
+      ctx.throw(500);
+      error(err.name, err.message);
+    }
+
+  };
+}
+
+function getManyHandler(model) {
+  return async ctx => {
+
+    const { header: { [PAGE_SIZE_HEADER]: pageSize = '10' }, path } = ctx;
+
+    debug('GET', path);
+
+    try {
+
+      ctx.body = await model.find().limit(parseInt(pageSize, 0));
 
     } catch (err) {
       ctx.throw(500);
