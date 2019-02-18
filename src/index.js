@@ -24,11 +24,9 @@ mongo.connect()
   .catch(e => error('mongo connect error', e.message));
 
 app
-  .use(morgan(':method :url :status :res[content-length] - :response-time ms'))
+  .use(morgan(':status :method :url :res[content-length] - :response-time ms'))
   .use(auth)
   .use(bodyParser({ jsonLimit: '100mb' }))
   .use(api.routes())
   .use(api.allowedMethods())
   .listen(REST_PORT);
-
-debug('started');
