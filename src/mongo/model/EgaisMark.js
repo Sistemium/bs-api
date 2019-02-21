@@ -37,7 +37,10 @@ schema.set('toJSON', {
 
 schema.index({ ts: -1 });
 schema.index({ isProcessed: 1 });
-schema.index({ processingError: 1 }, { sparse: true, name: 'egaisMarksProcessingError' });
+schema.index({ processingError: 1 }, {
+  sparse: true,
+  name: 'egaisMarksProcessingError',
+});
 
 schema.statics.merge = merge;
 
@@ -53,11 +56,20 @@ export async function mergeCancels(items) {
 
   const byMark = groupBy(items, 'egaisMarkId');
 
+  const found = keyBy(await model.find({ _id: { $in: Object.keys(byMark) } }), 'id');
+
   const ops = map(byMark, (cancels, egaisMarkId) => {
 
-    const keys = keyBy(cancels, ({ documentId }) => `cancels.${documentId}`);
+    const operations = [];
 
-    const opKeys = keyBy(cancels, ({ documentId }) => `operations.${documentId}`);
+    const opKeys = keyBy(cancels, ({ documentId }) => {
+      if (found[egaisMarkId].operations && found[egaisMarkId].operations[documentId]) {
+        operations.push(found[egaisMarkId].operations[documentId]);
+      }
+      return `operations.${documentId}`;
+    });
+
+    const keys = keyBy(operations, ({ documentId }) => `cancels.${documentId}`);
 
     const $unset = mapVales(opKeys, () => 1);
 
