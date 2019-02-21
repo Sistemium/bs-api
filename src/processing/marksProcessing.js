@@ -2,6 +2,7 @@ import log from 'sistemium-telegram/services/log';
 import each from 'lodash/each';
 import map from 'lodash/map';
 import orderBy from 'lodash/orderBy';
+import mongoose from 'mongoose';
 
 import { eachSeriesAsync } from 'sistemium-telegram/services/async';
 
@@ -47,6 +48,8 @@ export default async function (processBox, exportMark) {
   let lastReportedCount = 0;
 
   await eachSeriesAsync(marks, processor);
+
+  releaseMemory();
 
   debug('finish', `processed:${processedCount} ignored:${sumIgnoreCount} errored:${erroredCount}`);
 
@@ -173,6 +176,28 @@ export default async function (processBox, exportMark) {
     }
 
   }
+
+}
+
+function releaseMemory() {
+  
+  mongoose.connections.forEach(connection => {
+    const modelNames = Object.keys(connection.models);
+
+    modelNames.forEach(modelName => {
+      delete connection.models[modelName];
+    });
+
+    const collectionNames = Object.keys(connection.collections);
+    collectionNames.forEach(collectionName => {
+      delete connection.collections[collectionName];
+    });
+  });
+
+  const modelSchemaNames = Object.keys(mongoose.modelSchemas);
+  modelSchemaNames.forEach(modelSchemaName => {
+    delete mongoose.modelSchemas[modelSchemaName];
+  });
 
 }
 
