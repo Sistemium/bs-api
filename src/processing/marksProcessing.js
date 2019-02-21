@@ -180,7 +180,7 @@ export default async function (processBox, exportMark) {
 }
 
 function releaseMemory() {
-  
+
   mongoose.connections.forEach(connection => {
     const modelNames = Object.keys(connection.models);
 
