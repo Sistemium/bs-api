@@ -1,5 +1,6 @@
 import Router from 'koa-router';
 import log from 'sistemium-telegram/services/log';
+import pick from 'lodash/pick';
 
 import EgaisMark, { mergeOperations, mergeCancels } from '../mongo/model/EgaisMark';
 import ArticleDoc from '../mongo/model/ArticleDoc';
@@ -89,13 +90,14 @@ function getHandler(model) {
 function getManyHandler(model) {
   return async ctx => {
 
-    const { header: { [PAGE_SIZE_HEADER]: pageSize = '10' }, path } = ctx;
+    const { header: { [PAGE_SIZE_HEADER]: pageSize = '10' }, path, query } = ctx;
+    const filter = pick(query, Object.keys(model.schema.tree));
 
-    debug('GET', path);
+    debug('GET', path, filter);
 
     try {
 
-      ctx.body = await model.find().limit(parseInt(pageSize, 0));
+      ctx.body = await model.find(filter).limit(parseInt(pageSize, 0));
 
     } catch (err) {
       ctx.throw(500);
