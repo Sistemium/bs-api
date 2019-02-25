@@ -189,6 +189,7 @@ export async function processPalettes(externalDb) {
     {
       $match: {
         isProcessed: null,
+        barcode: { $ne: null },
         // cts: { $gt: Date.parse('2019-02-20T09:36:48.736Z') },
       },
     },
