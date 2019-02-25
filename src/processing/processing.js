@@ -55,7 +55,7 @@ export async function processBox(boxId, externalDb) {
  * @returns {Promise}
  */
 
-async function processPalette(boxId, externalDb) {
+export async function processPalette(boxId, externalDb) {
 
   const palette = await EgaisBox.findById(boxId);
 
