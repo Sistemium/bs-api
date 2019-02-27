@@ -15,6 +15,7 @@ const schema = new mongoose.Schema({
   barcode: String,
   cts: Date,
   egaisArticleId: String,
+  articleId: String,
   _id: String,
   site: Number,
   ts: {

@@ -133,7 +133,7 @@ export default async function (processBox, exportMark) {
         return;
       }
 
-      let { articleId } = boxProcessed;
+      let { articleId = boxProcessed.articleId } = mark;
 
       if (!articleId) {
 
@@ -182,6 +182,7 @@ export default async function (processBox, exportMark) {
         mark.errorDescription = e;
       }
 
+      mark.articleId = articleId;
       mark.isProcessed = true;
 
     }
