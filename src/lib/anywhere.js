@@ -5,6 +5,28 @@ const { debug, error } = log('anywhere');
 
 const { SQLA_CONNECTION } = process.env;
 
+const msgRe = /Code: ([^ ]*) Msg: (.*)/;
+
+class AnywhereError extends Error {
+
+  constructor(saError) {
+
+    super();
+
+    const message = saError.toString();
+
+    this.message = message;
+
+    if (message) {
+      const [, code, text] = message.match(msgRe);
+      this.code = code;
+      this.text = text;
+    }
+
+  }
+
+}
+
 export default class Anywhere {
 
   constructor(connParams = SQLA_CONNECTION) {
@@ -127,7 +149,7 @@ export default class Anywhere {
         } else {
           error('exec', err);
           await this.rollback();
-          reject(err);
+          reject(new AnywhereError(err));
         }
 
       });
