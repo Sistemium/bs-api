@@ -113,15 +113,13 @@ export default class ExternalDB extends Anywhere {
 
     const sql = SQL`merge into bs.WarehouseItem as d using with auto name (
       select 
-        a.id as article,
+        (select id from bs.ArticleTable where xid = ${articleId}) as article,
         (select id from bs.WarehouseBox where xid = ${egaisBoxId}) as currentBox,
         ${barcode} as barcode,
         ${egaisMarkId} as xid,
         'stock' as processing,
         ${site} as site,
         ${serverDateTimeFormat(cts)} as deviceCts
-      from bs.ArticleTable a
-      where a.xid = ${articleId}
     ) as t on t.xid = d.xid
     when not matched then insert
     when matched then skip

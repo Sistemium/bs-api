@@ -26,6 +26,7 @@ const schema = new mongoose.Schema({
   isProcessed: Boolean,
   processingError: String,
   cancels: Object,
+  errorDescription: Object,
 });
 
 schema.set('toJSON', {
@@ -46,6 +47,7 @@ const model = mongoose.model('EgaisMark', schema);
 export default model;
 
 export const ERROR_NO_ARTICLE_DOC = 'NoArticleDoc';
+export const ERROR_EXPORTING = 'ExportingError';
 
 export async function mergeCancels(items) {
 

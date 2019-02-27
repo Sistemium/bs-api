@@ -104,6 +104,8 @@ export default async function (processBox, exportMark) {
 
     if (mark.processingError) {
       erroredCount += 1;
+    } else {
+      mark.errorDescription = undefined;
     }
 
     await mark.save();
@@ -165,15 +167,21 @@ export default async function (processBox, exportMark) {
         return;
       }
 
-      await exportMark({
-        articleId,
-        egaisMarkId: mark.id,
-        site: mark.site,
-        egaisBoxId: boxId,
-        barcode: mark.barcode,
-      });
+      try {
+        await exportMark({
+          articleId,
+          egaisMarkId: mark.id,
+          site: mark.site,
+          egaisBoxId: boxId,
+          barcode: mark.barcode,
+        });
+        mark.processingError = undefined;
+      } catch (e) {
+        error('exportMark', e.code, e.text);
+        mark.processingError = em.ERROR_EXPORTING;
+        mark.errorDescription = e;
+      }
 
-      mark.processingError = undefined;
       mark.isProcessed = true;
 
     }
