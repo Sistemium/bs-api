@@ -80,6 +80,7 @@ export default async function (processBox, exportMark) {
     if (sumQuantity !== 1) {
 
       mark.isProcessed = true;
+      mark.processingError = undefined;
       sumIgnoreCount += 1;
 
     } else if (!boxId) {
