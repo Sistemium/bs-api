@@ -5,7 +5,9 @@ import * as mongo from '../mongo';
 import ArticleDoc from '../mongo/model/ArticleDoc';
 import EgaisBox from '../mongo/model/EgaisBox';
 import EgaisMark from '../mongo/model/EgaisMark';
+import Stock from '../mongo/model/Stock';
 import marksProcessing from './marksProcessing';
+import stockProcessing from './stockProcessing';
 import { processBox } from './processing';
 import ExternalDB from './external';
 
@@ -28,7 +30,10 @@ function processing() {
 
   let processStarted = false;
 
+  debug('debounce:', WATCH_DEBOUNCE);
+
   const triggerProcessing = debounce(doProcessing, WATCH_DEBOUNCE);
+  const triggerStockProcessing = debounce(stockProcessing, WATCH_DEBOUNCE);
 
   ArticleDoc.watch()
     .on('change', triggerProcessing);
@@ -37,7 +42,11 @@ function processing() {
   EgaisMark.watch()
     .on('change', triggerProcessing);
 
-  return doProcessing();
+  Stock.watch()
+    .on('change', triggerStockProcessing);
+
+  return doProcessing()
+    .then(stockProcessing);
 
   async function doProcessing() {
 

@@ -33,7 +33,7 @@ export async function processBox(boxId, externalDb) {
   }
 
   if (paletteId && paletteId !== '00000000-0000-0000-0000-000000000000') {
-    await processPalette(boxId, externalDb);
+    await processPalette(paletteId, externalDb);
   }
 
   await externalDb.exportBox(box);
@@ -55,7 +55,7 @@ export async function processBox(boxId, externalDb) {
  * @returns {Promise}
  */
 
-async function processPalette(boxId, externalDb) {
+export async function processPalette(boxId, externalDb) {
 
   const palette = await EgaisBox.findById(boxId);
 
@@ -64,7 +64,7 @@ async function processPalette(boxId, externalDb) {
     return null;
   }
 
-  if (palette.isProcessed) {
+  if (palette.isProcessed || !palette.barcode) {
     return null;
   }
 

@@ -1,6 +1,7 @@
 import log from 'sistemium-telegram/services/log';
 import each from 'lodash/each';
 import map from 'lodash/map';
+import filter from 'lodash/filter';
 import orderBy from 'lodash/orderBy';
 import mongoose from 'mongoose';
 
@@ -8,11 +9,16 @@ import { eachSeriesAsync } from 'sistemium-telegram/services/async';
 
 import EgaisMark, * as em from '../mongo/model/EgaisMark';
 import ArticleDoc from '../mongo/model/ArticleDoc';
+import EgaisBox from '../mongo/model/EgaisBox';
+
+import { processPalette } from './processing';
 
 const { debug, error } = log('marksProcessing');
 
 const PROCESSING_LIMIT = parseInt(process.env.PROCESSING_LIMIT || 50, 0);
 const PROCESSING_REPORT_COUNT = parseInt(process.env.PROCESSING_REPORT_COUNT || 10, 0);
+
+const PROCESSING_LIMIT_PALETTE = parseInt(process.env.PROCESSING_LIMIT_PALETTE || 50, 0);
 
 /* eslint-disable no-param-reassign */
 
@@ -101,6 +107,8 @@ export default async function (processBox, exportMark) {
 
     if (mark.processingError) {
       erroredCount += 1;
+    } else {
+      mark.errorDescription = undefined;
     }
 
     await mark.save();
@@ -128,7 +136,7 @@ export default async function (processBox, exportMark) {
         return;
       }
 
-      let { articleId } = boxProcessed;
+      let { articleId = boxProcessed.articleId } = mark;
 
       if (!articleId) {
 
@@ -162,15 +170,22 @@ export default async function (processBox, exportMark) {
         return;
       }
 
-      await exportMark({
-        articleId,
-        egaisMarkId: mark.id,
-        site: mark.site,
-        egaisBoxId: boxId,
-        barcode: mark.barcode,
-      });
+      try {
+        await exportMark({
+          articleId,
+          egaisMarkId: mark.id,
+          site: mark.site,
+          egaisBoxId: boxId,
+          barcode: mark.barcode,
+        });
+        mark.processingError = undefined;
+      } catch (e) {
+        error('exportMark', e.code, e.text);
+        mark.processingError = em.ERROR_EXPORTING;
+        mark.errorDescription = e;
+      }
 
-      mark.processingError = undefined;
+      mark.articleId = articleId;
       mark.isProcessed = true;
 
     }
@@ -198,6 +213,87 @@ function releaseMemory() {
   modelSchemaNames.forEach(modelSchemaName => {
     delete mongoose.modelSchemas[modelSchemaName];
   });
+
+}
+
+export async function processPalettes(externalDb) {
+
+  const pipeline = [
+    {
+      $match: {
+        isProcessed: null,
+        barcode: { $ne: null },
+        // cts: { $gt: Date.parse('2019-02-20T09:36:48.736Z') },
+      },
+    },
+    { $sort: { ts: -1 } },
+    {
+      $lookup: {
+        from: 'egaisboxes',
+        localField: '_id',
+        foreignField: 'parentId',
+        as: 'boxes',
+      },
+    },
+    {
+      $addFields: {
+        boxesCount: { $size: '$boxes' },
+      },
+    },
+    {
+      $match: {
+        boxesCount: { $gt: 0 },
+      },
+    },
+    { $limit: PROCESSING_LIMIT_PALETTE },
+  ];
+
+  const palettes = await EgaisBox.aggregate(pipeline);
+
+  if (!palettes.length) {
+    debug('no palettes to process');
+    return;
+  }
+
+  debug('palettes to process:', palettes.length);
+
+  // const count = await query.countDocuments();
+  const countTotal = await EgaisBox.countDocuments({ isProcessed: null });
+
+  debug('total palettes to process:', countTotal);
+
+  // let erroredCount = 0;
+  // let lastReportedCount = 0;
+
+  await eachSeriesAsync(palettes, palettesProcessor);
+
+  async function palettesProcessor(paletteInfo) {
+
+    const { _id: id, boxes, ts } = paletteInfo;
+
+    if (!id) {
+      throw Error('No palette id');
+    }
+
+    debug('palettesProcessor', ts);
+
+    const palette = await processPalette(id, externalDb);
+
+    if (!palette) {
+      error('not processed', id);
+      return;
+    }
+
+    const ids = filter(map(boxes, ({ _id, isProcessed }) => isProcessed && _id));
+
+    if (!ids.length) {
+      debug('no processed boxes');
+      return;
+    }
+
+    await externalDb.exportPaletteBoxes(id, ids);
+
+  }
 
 }
 
@@ -256,8 +352,8 @@ async function unprocessMarks() {
 
   debug('marks', idsToUpdate);
 
-  const filter = { _id: { $in: idsToUpdate } };
+  const query = { _id: { $in: idsToUpdate } };
 
-  await EgaisMark.updateMany(filter, { $set: { isProcessed: false } });
+  await EgaisMark.updateMany(query, { $set: { isProcessed: false } });
 
 }

@@ -37,6 +37,32 @@ export default class ExternalDB extends Anywhere {
 
   }
 
+  async exportPaletteBoxes(paletteId, boxIds) {
+
+    const sql = `merge into bs.WarehouseBox as d using with auto name (
+      select 
+        id,
+        (select id from bs.WarehousePalette where xid = ?) as currentPalette
+      from bs.WarehouseBox
+      where xid in (${boxIds.map(() => '?').join(',')})
+    ) as t on t.id = d.id
+    when matched
+        and d.processing = 'stock' 
+        and d.currentPalette is null 
+        and t.currentPalette is not null
+      then update set currentPalette = t.currentPalette
+    `;
+
+    const count = await this.execImmediate(sql, [paletteId, ...boxIds]);
+
+    debug('exportPaletteBoxes:', count || 0, 'of', boxIds.length);
+
+    if (count) {
+      await this.commit();
+    }
+
+  }
+
   async exportBox(params) {
 
     const {
@@ -59,7 +85,11 @@ export default class ExternalDB extends Anywhere {
         ${serverDateTimeFormat(cts)} as deviceCts
     ) as t on t.xid = d.xid
     when not matched then insert
-    when matched then skip
+    when matched
+        and d.processing = 'stock' 
+        and d.currentPalette is null 
+        and t.currentPalette is not null
+      then update set currentPalette = t.currentPalette
     `;
 
     const prepared = await this.prepare(sql.query);
@@ -83,15 +113,13 @@ export default class ExternalDB extends Anywhere {
 
     const sql = SQL`merge into bs.WarehouseItem as d using with auto name (
       select 
-        a.id as article,
+        (select id from bs.ArticleTable where xid = ${articleId}) as article,
         (select id from bs.WarehouseBox where xid = ${egaisBoxId}) as currentBox,
         ${barcode} as barcode,
         ${egaisMarkId} as xid,
         'stock' as processing,
         ${site} as site,
         ${serverDateTimeFormat(cts)} as deviceCts
-      from bs.ArticleTable a
-      where a.xid = ${articleId}
     ) as t on t.xid = d.xid
     when not matched then insert
     when matched then skip

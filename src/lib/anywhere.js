@@ -3,9 +3,33 @@ import log from 'sistemium-telegram/services/log';
 
 const { debug, error } = log('anywhere');
 
+const { SQLA_CONNECTION } = process.env;
+
+const msgRe = /Code: ([^ ]*) Msg: (.*)/;
+
+class AnywhereError extends Error {
+
+  constructor(saError) {
+
+    super();
+
+    const message = saError.toString();
+
+    this.message = message;
+
+    if (message) {
+      const [, code, text] = message.match(msgRe);
+      this.code = code;
+      this.text = text;
+    }
+
+  }
+
+}
+
 export default class Anywhere {
 
-  constructor(connParams) {
+  constructor(connParams = SQLA_CONNECTION) {
     this.connParams = connParams;
     this.connection = db.createConnection();
     this.statements = {};
@@ -78,6 +102,40 @@ export default class Anywhere {
 
   }
 
+  async rollback() {
+
+    return new Promise((resolve, reject) => {
+      this.connection.rollback(err => {
+        if (!err) {
+          resolve();
+        } else {
+          error('commit', err);
+          reject(err);
+        }
+      });
+    });
+
+  }
+
+  async execImmediate(sql, values = []) {
+
+    return new Promise((resolve, reject) => {
+
+      this.connection.exec(sql, values, (err, res) => {
+
+        if (!err) {
+          resolve(res);
+        } else {
+          error('exec', err);
+          reject(err);
+        }
+
+      });
+
+    });
+
+  }
+
   async exec(prepared, values) {
 
     return new Promise((resolve, reject) => {
@@ -90,8 +148,8 @@ export default class Anywhere {
           resolve(res);
         } else {
           error('exec', err);
-          this.connection.rollback();
-          reject(err);
+          await this.rollback();
+          reject(new AnywhereError(err));
         }
 
       });

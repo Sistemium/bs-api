@@ -13,6 +13,7 @@ const schema = new Schema({
   discountMax: Number,
   discountMaxDoc: Number,
   site: Number,
+  newMark: Number,
 });
 
 // schema.set('toJSON', {
