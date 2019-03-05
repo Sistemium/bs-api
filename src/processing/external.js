@@ -122,7 +122,8 @@ export default class ExternalDB extends Anywhere {
         ${serverDateTimeFormat(cts)} as deviceCts
     ) as t on t.xid = d.xid
     when not matched then insert
-    when matched then skip
+    when matched and d.article <> t.article then
+      update set article = t.article
     `;
 
     const prepared = await this.prepare(sql.query);

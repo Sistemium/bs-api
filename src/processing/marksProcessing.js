@@ -139,7 +139,7 @@ export default async function (processBox, exportMark) {
       if (!articleId) {
 
         const doc = await ArticleDoc.findOne({ egaisBoxIds: boxId })
-          .sort('ts');
+          .sort('-ts');
 
         if (!doc) {
 
